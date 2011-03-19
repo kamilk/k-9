@@ -1028,8 +1028,14 @@ public class MessagingController implements Runnable {
             /*
              * Now we download the actual content of messages.
              */
-            int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false);
+            CriteriaFilter filter = new CriteriaFilter(); 
+            int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false, filter);
 
+            /*
+             * Apply actions resulting from the message filters
+             */
+            filter.PerformActions(this); 
+            
             int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
             setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
@@ -1163,7 +1169,7 @@ public class MessagingController implements Runnable {
     }
 
     private int downloadMessages(final Account account, final Folder remoteFolder,
-                                 final LocalFolder localFolder, List<Message> inputMessages, boolean flagSyncOnly) throws MessagingException {
+                                 final LocalFolder localFolder, List<Message> inputMessages, boolean flagSyncOnly, final CriteriaFilter filter) throws MessagingException {
         final Date earliestDate = account.getEarliestPollDate();
         Date downloadStarted = new Date(); // now
 
@@ -1230,7 +1236,7 @@ public class MessagingController implements Runnable {
                 Log.d(K9.LOG_TAG, "SYNC: About to fetch " + unsyncedMessages.size() + " unsynced messages for folder " + folder);
 
 
-            fetchUnsyncedMessages(account, remoteFolder, localFolder, unsyncedMessages, smallMessages, largeMessages, progress, todo, fp);
+            fetchUnsyncedMessages(account, remoteFolder, localFolder, unsyncedMessages, smallMessages, largeMessages, progress, todo, fp, filter);
 
             // If a message didn't exist, messageFinished won't be called, but we shouldn't try again
             // If we got here, nothing failed
@@ -1265,7 +1271,7 @@ public class MessagingController implements Runnable {
         //        fp.add(FetchProfile.Item.FLAGS);
         //        fp.add(FetchProfile.Item.ENVELOPE);
 
-        downloadSmallMessages(account, remoteFolder, localFolder, smallMessages, progress, unreadBeforeStart, newMessages, todo, fp);
+        downloadSmallMessages(account, remoteFolder, localFolder, smallMessages, progress, unreadBeforeStart, newMessages, todo, fp, filter);
         smallMessages.clear();
 
         /*
@@ -1273,7 +1279,7 @@ public class MessagingController implements Runnable {
          */
         fp.clear();
         fp.add(FetchProfile.Item.STRUCTURE);
-        downloadLargeMessages(account, remoteFolder, localFolder, largeMessages, progress, unreadBeforeStart,  newMessages, todo, fp);
+        downloadLargeMessages(account, remoteFolder, localFolder, largeMessages, progress, unreadBeforeStart,  newMessages, todo, fp, filter);
         largeMessages.clear();
 
         /*
@@ -1385,7 +1391,8 @@ public class MessagingController implements Runnable {
                                        final ArrayList<Message> largeMessages,
                                        final AtomicInteger progress,
                                        final int todo,
-                                       FetchProfile fp) throws MessagingException {
+                                       FetchProfile fp, 
+                                       final CriteriaFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -1422,13 +1429,9 @@ public class MessagingController implements Runnable {
                         return;
                     }
 
-                    if (message.getSize() > account.getMaximumAutoDownloadMessageSize()) {
-                        largeMessages.add(message);
-                    } else {
-                        smallMessages.add(message);
-                    }
-
-                    // And include it in the view
+                    boolean shouldBeDownloaded = true; 
+                    
+                    // include the message in the view
                     if (message.getSubject() != null && message.getFrom() != null) {
                         /*
                          * We check to make sure that we got something worth
@@ -1437,14 +1440,27 @@ public class MessagingController implements Runnable {
                          * ENVELOPE, only size.
                          */
                         if (!isMessageSuppressed(account, folder, message)) {
-                            // keep message for delayed storing
-                            chunk.add(message);
-
-                            if (chunk.size() >= UNSYNC_CHUNK_SIZE) {
-                                writeUnsyncedMessages(chunk, localFolder, account, folder);
-                                chunk.clear();
+                        	//filter the message for the first time
+                            shouldBeDownloaded = filter.ApplyToMessage(message);
+                        	
+                            if (shouldBeDownloaded) {
+                                // keep message for delayed storing
+	                            chunk.add(message);
+	
+	                            if (chunk.size() >= UNSYNC_CHUNK_SIZE) {
+	                                writeUnsyncedMessages(chunk, localFolder, account, folder);
+	                                chunk.clear();
+	                            }
                             }
                         }
+                    }
+                    
+                    if (shouldBeDownloaded) {
+	                    if (message.getSize() > account.getMaximumAutoDownloadMessageSize()) {
+	                        largeMessages.add(message);
+	                    } else {
+	                        smallMessages.add(message);
+	                    }
                     }
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Error while storing downloaded message.", e);
@@ -1531,15 +1547,14 @@ public class MessagingController implements Runnable {
                                        final int unreadBeforeStart,
                                        final AtomicInteger newMessages,
                                        final int todo,
-                                       FetchProfile fp) throws MessagingException {
+                                       FetchProfile fp, 
+                                       final CriteriaFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
 
         if (K9.DEBUG)
             Log.d(K9.LOG_TAG, "SYNC: Fetching small messages for folder " + folder);
-
-        final MessagingController controller = this; //for the embedded function
 
         remoteFolder.fetch(smallMessages.toArray(new Message[smallMessages.size()]),
         fp, new MessageRetrievalListener() {
@@ -1565,8 +1580,7 @@ public class MessagingController implements Runnable {
                               + account + ":" + folder + ":" + message.getUid());
 
                     //filter the message
-                    final CriteriaFilter filter = new CriteriaFilter();
-                    boolean showInFolder = filter.ApplyToMessage(controller, localMessage);
+                    boolean showInFolder = filter.ApplyToMessage(localMessage);
 
                     // Update the listener with what we've found
                     for (MessagingListener l : getListeners()) {
@@ -1574,13 +1588,13 @@ public class MessagingController implements Runnable {
                             l.synchronizeMailboxAddOrUpdateMessage(account, folder, localMessage);
                         }
                         l.synchronizeMailboxProgress(account, folder, progress.get(), todo);
-                        if (!localMessage.isSet(Flag.SEEN)) {
+                        if (showInFolder) {
                             l.synchronizeMailboxNewMessage(account, folder, localMessage);
                         }
                     }
                     // Send a notification of this message
 
-                    if (!localMessage.isSet(Flag.SEEN) && shouldNotifyForMessage(account, localFolder, message)) {
+                    if (showInFolder && shouldNotifyForMessage(account, localFolder, message)) {
                         newMessages.incrementAndGet();
                         notifyAccount(mApplication, account, message, unreadBeforeStart, newMessages);
                     }
@@ -1611,7 +1625,8 @@ public class MessagingController implements Runnable {
                                        final int unreadBeforeStart,
                                        final AtomicInteger newMessages,
                                        final int todo,
-                                       FetchProfile fp) throws MessagingException {
+                                       FetchProfile fp, 
+                                       final CriteriaFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -1699,8 +1714,7 @@ public class MessagingController implements Runnable {
                       + account + ":" + folder + ":" + message.getUid());
 
             //filter the message
-            CriteriaFilter filter = new CriteriaFilter();
-            boolean showInFolder = filter.ApplyToMessage(this, localMessage);
+            boolean showInFolder = filter.ApplyToMessage(localMessage);
 
             // Update the listener with what we've found
             progress.incrementAndGet();
@@ -1709,13 +1723,13 @@ public class MessagingController implements Runnable {
                     l.synchronizeMailboxAddOrUpdateMessage(account, folder, localMessage);
                 }
                 l.synchronizeMailboxProgress(account, folder, progress.get(), todo);
-                if (!localMessage.isSet(Flag.SEEN)) {
+                if (showInFolder) {
                     l.synchronizeMailboxNewMessage(account, folder, localMessage);
                 }
             }
 
             // Send a notification of this message
-            if (!localMessage.isSet(Flag.SEEN) && shouldNotifyForMessage(account, localFolder, message)) {
+            if (showInFolder && shouldNotifyForMessage(account, localFolder, message)) {
                 newMessages.incrementAndGet();
                 notifyAccount(mApplication, account, message, unreadBeforeStart, newMessages);
             }
@@ -4298,6 +4312,7 @@ public class MessagingController implements Runnable {
                   + ", folder " + remoteFolder.getName());
 
         final CountDownLatch latch = new CountDownLatch(1);
+        final MessagingController controller = this; //for the embedded function
         putBackground("Push messageArrived of account " + account.getDescription()
         + ", folder " + remoteFolder.getName(), null, new Runnable() {
             @Override
@@ -4307,11 +4322,15 @@ public class MessagingController implements Runnable {
                     LocalStore localStore = account.getLocalStore();
                     localFolder = localStore.getFolder(remoteFolder.getName());
                     localFolder.open(OpenMode.READ_WRITE);
+                    final CriteriaFilter filter = new CriteriaFilter(); 
 
                     account.setRingNotified(false);
-                    int newCount = downloadMessages(account, remoteFolder, localFolder, messages, flagSyncOnly);
+                    int newCount = downloadMessages(account, remoteFolder, localFolder, messages, flagSyncOnly, filter);
                     int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  messages.size());
 
+                    //apply actions resulting from message filters
+                    filter.PerformActions(controller);
+                    
                     setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
                     localFolder.setLastPush(System.currentTimeMillis());
