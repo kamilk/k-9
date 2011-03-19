@@ -64,6 +64,7 @@ import com.fsck.k9.mail.store.UnavailableStorageException;
 import com.fsck.k9.mail.store.LocalStore.LocalFolder;
 import com.fsck.k9.mail.store.LocalStore.LocalMessage;
 import com.fsck.k9.mail.store.LocalStore.PendingCommand;
+import com.fsck.k9.criteriafilter.CriteriaFilter;
 
 
 /**
@@ -1538,6 +1539,8 @@ public class MessagingController implements Runnable {
         if (K9.DEBUG)
             Log.d(K9.LOG_TAG, "SYNC: Fetching small messages for folder " + folder);
 
+        final MessagingController controller = this; //for the embedded function
+
         remoteFolder.fetch(smallMessages.toArray(new Message[smallMessages.size()]),
         fp, new MessageRetrievalListener() {
             @Override
@@ -1561,9 +1564,15 @@ public class MessagingController implements Runnable {
                         Log.v(K9.LOG_TAG, "About to notify listeners that we got a new small message "
                               + account + ":" + folder + ":" + message.getUid());
 
+                    //filter the message
+                    final CriteriaFilter filter = new CriteriaFilter();
+                    boolean showInFolder = filter.ApplyToMessage(controller, localMessage);
+
                     // Update the listener with what we've found
                     for (MessagingListener l : getListeners()) {
-                        l.synchronizeMailboxAddOrUpdateMessage(account, folder, localMessage);
+                        if (showInFolder) {
+                            l.synchronizeMailboxAddOrUpdateMessage(account, folder, localMessage);
+                        }
                         l.synchronizeMailboxProgress(account, folder, progress.get(), todo);
                         if (!localMessage.isSet(Flag.SEEN)) {
                             l.synchronizeMailboxNewMessage(account, folder, localMessage);
@@ -1571,7 +1580,7 @@ public class MessagingController implements Runnable {
                     }
                     // Send a notification of this message
 
-                    if (shouldNotifyForMessage(account, localFolder, message)) {
+                    if (!localMessage.isSet(Flag.SEEN) && shouldNotifyForMessage(account, localFolder, message)) {
                         newMessages.incrementAndGet();
                         notifyAccount(mApplication, account, message, unreadBeforeStart, newMessages);
                     }
@@ -1618,6 +1627,7 @@ public class MessagingController implements Runnable {
                 continue;
             }
 
+            Message localMessage;
             if (message.getBody() == null) {
                 /*
                  * The provider was unable to get the structure of the message, so
@@ -1638,7 +1648,7 @@ public class MessagingController implements Runnable {
                 // Store the updated message locally
                 localFolder.appendMessages(new Message[] { message });
 
-                Message localMessage = localFolder.getMessage(message.getUid());
+                localMessage = localFolder.getMessage(message.getUid());
 
 
                 // Certain (POP3) servers give you the whole message even when you ask for only the first x Kb
@@ -1675,10 +1685,10 @@ public class MessagingController implements Runnable {
                 for (Part part : viewables) {
                     remoteFolder.fetchPart(message, part, null);
                 }
+
                 // Store the updated message locally
                 localFolder.appendMessages(new Message[] { message });
-
-                Message localMessage = localFolder.getMessage(message.getUid());
+                localMessage = localFolder.getMessage(message.getUid());
 
                 // Set a flag indicating this message has been fully downloaded and can be
                 // viewed.
@@ -1688,11 +1698,16 @@ public class MessagingController implements Runnable {
                 Log.v(K9.LOG_TAG, "About to notify listeners that we got a new large message "
                       + account + ":" + folder + ":" + message.getUid());
 
+            //filter the message
+            CriteriaFilter filter = new CriteriaFilter();
+            boolean showInFolder = filter.ApplyToMessage(this, localMessage);
+
             // Update the listener with what we've found
             progress.incrementAndGet();
-            Message localMessage = localFolder.getMessage(message.getUid());
             for (MessagingListener l : getListeners()) {
-                l.synchronizeMailboxAddOrUpdateMessage(account, folder, localMessage);
+                if (showInFolder) {
+                    l.synchronizeMailboxAddOrUpdateMessage(account, folder, localMessage);
+                }
                 l.synchronizeMailboxProgress(account, folder, progress.get(), todo);
                 if (!localMessage.isSet(Flag.SEEN)) {
                     l.synchronizeMailboxNewMessage(account, folder, localMessage);
@@ -1700,7 +1715,7 @@ public class MessagingController implements Runnable {
             }
 
             // Send a notification of this message
-            if (shouldNotifyForMessage(account, localFolder, message)) {
+            if (!localMessage.isSet(Flag.SEEN) && shouldNotifyForMessage(account, localFolder, message)) {
                 newMessages.incrementAndGet();
                 notifyAccount(mApplication, account, message, unreadBeforeStart, newMessages);
             }
