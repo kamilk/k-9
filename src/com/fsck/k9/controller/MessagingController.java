@@ -1030,13 +1030,13 @@ public class MessagingController implements Runnable {
              */
             CriteriaFilter filter = new CriteriaFilter(); 
             int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false, filter);
+            int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
 
             /*
              * Apply actions resulting from the message filters
              */
-            filter.PerformActions(this); 
-            
-            int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
+            unreadMessageCount -= filter.PerformActions(this); 
+
             setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
 
@@ -1580,7 +1580,7 @@ public class MessagingController implements Runnable {
                               + account + ":" + folder + ":" + message.getUid());
 
                     //filter the message
-                    boolean showInFolder = filter.ApplyToMessage(localMessage);
+                    boolean showInFolder = filter.ApplyToMessage(message);
 
                     // Update the listener with what we've found
                     for (MessagingListener l : getListeners()) {
@@ -1714,7 +1714,7 @@ public class MessagingController implements Runnable {
                       + account + ":" + folder + ":" + message.getUid());
 
             //filter the message
-            boolean showInFolder = filter.ApplyToMessage(localMessage);
+            boolean showInFolder = filter.ApplyToMessage(message);
 
             // Update the listener with what we've found
             progress.incrementAndGet();
@@ -4327,9 +4327,9 @@ public class MessagingController implements Runnable {
                     account.setRingNotified(false);
                     int newCount = downloadMessages(account, remoteFolder, localFolder, messages, flagSyncOnly, filter);
                     int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  messages.size());
-
+                    
                     //apply actions resulting from message filters
-                    filter.PerformActions(controller);
+                    unreadMessageCount -= filter.PerformActions(controller);
                     
                     setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
