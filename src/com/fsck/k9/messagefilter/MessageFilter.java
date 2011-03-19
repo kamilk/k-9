@@ -1,4 +1,4 @@
-package com.fsck.k9.criteriafilter;
+package com.fsck.k9.messagefilter;
 
 import java.util.ArrayList;
 
@@ -11,7 +11,20 @@ import com.fsck.k9.controller.MessagingController;
  * The filter for checking the incoming messages for user-specified criteria.
  * If they are met, user-specified actions are performed.
  */
-public class CriteriaFilter {
+public class MessageFilter {
+
+	ArrayList<FilteringCriterion> mCriteria = new ArrayList<FilteringCriterion>();
+    ArrayList<Message> mMessagesToDelete = new ArrayList<Message>();
+	boolean mAll; 
+	
+	public MessageFilter(boolean all) {
+		mAll = all; 
+	}
+	
+	public void addCriterion(FilteringCriterion criteria) {
+		mCriteria.add(criteria); 
+	}
+	
     /**
      * Apply the filter to a message, performing appropriate actions if
      * necessary.
@@ -22,17 +35,37 @@ public class CriteriaFilter {
      *         false means there's no point displaying or downloading the message
      * @throws MessagingException from Message.setFlag()
      */
-    public boolean ApplyToMessage(Message message) throws MessagingException {
-    	if (mMessagesToDelete.contains(message)) {
-    		//already's been filtered
-    		return false;
+    public boolean applyToMessage(Message message) throws MessagingException {
+    	if (mCriteria.isEmpty())
+    		return true; 
+    	
+    	boolean result; 
+    	if (mAll) {
+    		result = true; 
+    	} else {
+    		result = false;
     	}
     	
-        if (message.getSubject() != null && message.getSubject().contains("spam")) {
-	        mMessagesToDelete.add(message);
-	        return false;
-        }
-        return true;
+    	for (FilteringCriterion criterion : mCriteria) {
+    		boolean isMet = criterion.check(message); 
+    		if (mAll) {
+    			result &= isMet;
+    			if (!result) {
+    				//should be all, one is unmet
+    				mMessagesToDelete.add(message);
+    				return false; 
+    			}
+    		} else {
+    			result |= isMet; 
+    			if (result) {
+    				//should be any, one is met
+    				mMessagesToDelete.add(message);
+    				return false; 
+    			}
+    		}
+    	}
+    	
+    	return !result; 
     }
     
     /**
@@ -40,7 +73,7 @@ public class CriteriaFilter {
      * @param controller Controller to deal with the message
      * @return How many messages have been automatically marked as seen. 
      */
-    public int PerformActions(final MessagingController controller) {
+    public int performActions(final MessagingController controller) {
     	int howManySeen = 0; 
     	for (Message message : mMessagesToDelete) {
     		controller.setFlag(new Message[]{message}, Flag.SEEN, true);
@@ -48,7 +81,5 @@ public class CriteriaFilter {
     		controller.deleteMessages(new Message[]{message}, null); 
     	}
     	return howManySeen; 
-    }
-    
-    ArrayList<Message> mMessagesToDelete = new ArrayList<Message>(); 
+    } 
 }

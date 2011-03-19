@@ -64,7 +64,8 @@ import com.fsck.k9.mail.store.UnavailableStorageException;
 import com.fsck.k9.mail.store.LocalStore.LocalFolder;
 import com.fsck.k9.mail.store.LocalStore.LocalMessage;
 import com.fsck.k9.mail.store.LocalStore.PendingCommand;
-import com.fsck.k9.criteriafilter.CriteriaFilter;
+import com.fsck.k9.messagefilter.FilteringCriterion;
+import com.fsck.k9.messagefilter.MessageFilter;
 
 
 /**
@@ -1028,14 +1029,15 @@ public class MessagingController implements Runnable {
             /*
              * Now we download the actual content of messages.
              */
-            CriteriaFilter filter = new CriteriaFilter(); 
+            MessageFilter filter = new MessageFilter(false);
+            filter.addCriterion(new FilteringCriterion(FilteringCriterion.Operation.CONTAINS, "spam"));
             int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false, filter);
             int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
 
             /*
              * Apply actions resulting from the message filters
              */
-            unreadMessageCount -= filter.PerformActions(this); 
+            unreadMessageCount -= filter.performActions(this); 
 
             setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
@@ -1169,7 +1171,7 @@ public class MessagingController implements Runnable {
     }
 
     private int downloadMessages(final Account account, final Folder remoteFolder,
-                                 final LocalFolder localFolder, List<Message> inputMessages, boolean flagSyncOnly, final CriteriaFilter filter) throws MessagingException {
+                                 final LocalFolder localFolder, List<Message> inputMessages, boolean flagSyncOnly, final MessageFilter filter) throws MessagingException {
         final Date earliestDate = account.getEarliestPollDate();
         Date downloadStarted = new Date(); // now
 
@@ -1392,7 +1394,7 @@ public class MessagingController implements Runnable {
                                        final AtomicInteger progress,
                                        final int todo,
                                        FetchProfile fp, 
-                                       final CriteriaFilter filter) throws MessagingException {
+                                       final MessageFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -1441,7 +1443,7 @@ public class MessagingController implements Runnable {
                          */
                         if (!isMessageSuppressed(account, folder, message)) {
                         	//filter the message for the first time
-                            shouldBeDownloaded = filter.ApplyToMessage(message);
+                            shouldBeDownloaded = filter.applyToMessage(message);
                         	
                             if (shouldBeDownloaded) {
                                 // keep message for delayed storing
@@ -1548,7 +1550,7 @@ public class MessagingController implements Runnable {
                                        final AtomicInteger newMessages,
                                        final int todo,
                                        FetchProfile fp, 
-                                       final CriteriaFilter filter) throws MessagingException {
+                                       final MessageFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -1580,7 +1582,7 @@ public class MessagingController implements Runnable {
                               + account + ":" + folder + ":" + message.getUid());
 
                     //filter the message
-                    boolean showInFolder = filter.ApplyToMessage(message);
+                    boolean showInFolder = filter.applyToMessage(message);
 
                     // Update the listener with what we've found
                     for (MessagingListener l : getListeners()) {
@@ -1626,7 +1628,7 @@ public class MessagingController implements Runnable {
                                        final AtomicInteger newMessages,
                                        final int todo,
                                        FetchProfile fp, 
-                                       final CriteriaFilter filter) throws MessagingException {
+                                       final MessageFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -1714,7 +1716,7 @@ public class MessagingController implements Runnable {
                       + account + ":" + folder + ":" + message.getUid());
 
             //filter the message
-            boolean showInFolder = filter.ApplyToMessage(message);
+            boolean showInFolder = filter.applyToMessage(message);
 
             // Update the listener with what we've found
             progress.incrementAndGet();
@@ -4322,14 +4324,16 @@ public class MessagingController implements Runnable {
                     LocalStore localStore = account.getLocalStore();
                     localFolder = localStore.getFolder(remoteFolder.getName());
                     localFolder.open(OpenMode.READ_WRITE);
-                    final CriteriaFilter filter = new CriteriaFilter(); 
+                    
+                    MessageFilter filter = new MessageFilter(false);
+                    filter.addCriterion(new FilteringCriterion(FilteringCriterion.Operation.CONTAINS, "spam")); 
 
                     account.setRingNotified(false);
                     int newCount = downloadMessages(account, remoteFolder, localFolder, messages, flagSyncOnly, filter);
                     int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  messages.size());
                     
                     //apply actions resulting from message filters
-                    unreadMessageCount -= filter.PerformActions(controller);
+                    unreadMessageCount -= filter.performActions(controller);
                     
                     setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
