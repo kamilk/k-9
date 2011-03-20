@@ -14,18 +14,18 @@ import com.fsck.k9.controller.MessagingController;
  */
 public class MessageFilter {
 
-	ArrayList<FilteringCriterion> mCriteria = new ArrayList<FilteringCriterion>();
+    ArrayList<FilteringCriterion> mCriteria = new ArrayList<FilteringCriterion>();
     ArrayList<LocalMessage> mMessagesToDelete = new ArrayList<LocalMessage>();
     ArrayList<Message> mMessagesToMarkAsSeen = new ArrayList<Message>();
-	boolean mAll;
+    boolean mAll;
 
-	public MessageFilter(boolean all) {
-		mAll = all;
-	}
+    public MessageFilter(boolean all) {
+        mAll = all;
+    }
 
-	public void addCriterion(FilteringCriterion criteria) {
-		mCriteria.add(criteria);
-	}
+    public void addCriterion(FilteringCriterion criteria) {
+        mCriteria.add(criteria);
+    }
 
     /**
      * Apply the filter to a message, performing appropriate actions if
@@ -38,38 +38,38 @@ public class MessageFilter {
      *         false means there's no point displaying or downloading the message
      */
     public boolean applyToMessage(final Message message, final LocalMessage localMessage) {
-    	if (mCriteria.isEmpty())
-    		return true;
+        if (mCriteria.isEmpty())
+            return true;
 
-    	boolean result;
-    	if (mAll) {
-    		result = true;
-    	} else {
-    		result = false;
-    	}
+        boolean result;
+        if (mAll) {
+            result = true;
+        } else {
+            result = false;
+        }
 
-    	for (FilteringCriterion criterion : mCriteria) {
-    		boolean isMet = criterion.check(message);
-    		if (mAll) {
-    			result &= isMet;
-    			if (!result) {
-    				//should be all, one is unmet
-    				mMessagesToDelete.add(localMessage);
-    				mMessagesToMarkAsSeen.add(message);
-    				return false;
-    			}
-    		} else {
-    			result |= isMet;
-    			if (result) {
-    				//should be any, one is met
-    				mMessagesToDelete.add(localMessage);
-    				mMessagesToMarkAsSeen.add(message);
-    				return false;
-    			}
-    		}
-    	}
+        for (FilteringCriterion criterion : mCriteria) {
+            boolean isMet = criterion.check(message);
+            if (mAll) {
+                result &= isMet;
+                if (!result) {
+                    //should be all, one is unmet
+                    mMessagesToDelete.add(localMessage);
+                    mMessagesToMarkAsSeen.add(message);
+                    return false;
+                }
+            } else {
+                result |= isMet;
+                if (result) {
+                    //should be any, one is met
+                    mMessagesToDelete.add(localMessage);
+                    mMessagesToMarkAsSeen.add(message);
+                    return false;
+                }
+            }
+        }
 
-    	return !result;
+        return !result;
     }
 
     /**
@@ -79,16 +79,16 @@ public class MessageFilter {
      * @return How many messages in the current have been automatically marked as seen.
      */
     public int performActions(final MessagingController controller, final LocalFolder currentFolder) {
-    	int howManySeen = 0;
-    	for (Message message : mMessagesToDelete) {
-    		controller.deleteMessages(new Message[]{message}, null);
-    	}
+        int howManySeen = 0;
+        for (Message message : mMessagesToDelete) {
+            controller.deleteMessages(new Message[]{message}, null);
+        }
 
-    	for (Message message : mMessagesToMarkAsSeen) {
-    		controller.setFlag(new Message[]{message}, Flag.SEEN, true);
-    		if (currentFolder != null && message.getFolder().getName().equals(currentFolder.getName())) {
-    			++howManySeen;
-    		}
+        for (Message message : mMessagesToMarkAsSeen) {
+            controller.setFlag(new Message[]{message}, Flag.SEEN, true);
+            if (currentFolder != null && message.getFolder().getName().equals(currentFolder.getName())) {
+                ++howManySeen;
+            }
         }
         return howManySeen;
     }

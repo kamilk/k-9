@@ -3384,12 +3384,12 @@ public class MessagingController implements Runnable {
             }
 
             for (Message m : messages) {
-	            for (final MessagingListener l : getListeners()) {
-	            	l.messageDeleted(account, folder, m);
-	            	if (localTrashFolder != null) {
-	            		l.synchronizeMailboxAddOrUpdateMessage(account, localTrashFolder.getName(), m);
-	            	}
-	            }
+                for (final MessagingListener l : getListeners()) {
+                    l.messageDeleted(account, folder, m);
+                    if (localTrashFolder != null) {
+                        l.synchronizeMailboxAddOrUpdateMessage(account, localTrashFolder.getName(), m);
+                    }
+                }
             }
 
             for (MessagingListener l : getListeners()) {
