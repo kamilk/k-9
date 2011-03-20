@@ -1037,7 +1037,7 @@ public class MessagingController implements Runnable {
             /*
              * Apply actions resulting from the message filters
              */
-            unreadMessageCount -= filter.performActions(this); 
+            unreadMessageCount -= filter.performActions(this, localFolder);
 
             setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
@@ -1393,7 +1393,7 @@ public class MessagingController implements Runnable {
                                        final ArrayList<Message> largeMessages,
                                        final AtomicInteger progress,
                                        final int todo,
-                                       FetchProfile fp, 
+                                       FetchProfile fp,
                                        final MessageFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
@@ -1431,8 +1431,6 @@ public class MessagingController implements Runnable {
                         return;
                     }
 
-                    boolean shouldBeDownloaded = true; 
-                    
                     // include the message in the view
                     if (message.getSubject() != null && message.getFrom() != null) {
                         /*
@@ -1442,27 +1440,21 @@ public class MessagingController implements Runnable {
                          * ENVELOPE, only size.
                          */
                         if (!isMessageSuppressed(account, folder, message)) {
-                        	//filter the message for the first time
-                            shouldBeDownloaded = filter.applyToMessage(message);
-                        	
-                            if (shouldBeDownloaded) {
-                                // keep message for delayed storing
-	                            chunk.add(message);
-	
-	                            if (chunk.size() >= UNSYNC_CHUNK_SIZE) {
-	                                writeUnsyncedMessages(chunk, localFolder, account, folder);
-	                                chunk.clear();
-	                            }
+
+                            // keep message for delayed storing
+                            chunk.add(message);
+
+                            if (chunk.size() >= UNSYNC_CHUNK_SIZE) {
+                                writeUnsyncedMessages(chunk, localFolder, account, folder);
+                                chunk.clear();
                             }
                         }
                     }
-                    
-                    if (shouldBeDownloaded) {
-	                    if (message.getSize() > account.getMaximumAutoDownloadMessageSize()) {
-	                        largeMessages.add(message);
-	                    } else {
-	                        smallMessages.add(message);
-	                    }
+
+                    if (message.getSize() > account.getMaximumAutoDownloadMessageSize()) {
+                        largeMessages.add(message);
+                    } else {
+                        smallMessages.add(message);
                     }
                 } catch (Exception e) {
                     Log.e(K9.LOG_TAG, "Error while storing downloaded message.", e);
@@ -1549,7 +1541,7 @@ public class MessagingController implements Runnable {
                                        final int unreadBeforeStart,
                                        final AtomicInteger newMessages,
                                        final int todo,
-                                       FetchProfile fp, 
+                                       FetchProfile fp,
                                        final MessageFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
@@ -1582,7 +1574,7 @@ public class MessagingController implements Runnable {
                               + account + ":" + folder + ":" + message.getUid());
 
                     //filter the message
-                    boolean showInFolder = filter.applyToMessage(message);
+                    boolean showInFolder = filter.applyToMessage(message, (LocalMessage)localMessage);
 
                     // Update the listener with what we've found
                     for (MessagingListener l : getListeners()) {
@@ -1627,7 +1619,7 @@ public class MessagingController implements Runnable {
                                        final int unreadBeforeStart,
                                        final AtomicInteger newMessages,
                                        final int todo,
-                                       FetchProfile fp, 
+                                       FetchProfile fp,
                                        final MessageFilter filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
@@ -1716,7 +1708,7 @@ public class MessagingController implements Runnable {
                       + account + ":" + folder + ":" + message.getUid());
 
             //filter the message
-            boolean showInFolder = filter.applyToMessage(message);
+            boolean showInFolder = filter.applyToMessage(message, (LocalMessage)localMessage);
 
             // Update the listener with what we've found
             progress.incrementAndGet();
@@ -3391,6 +3383,15 @@ public class MessagingController implements Runnable {
                 }
             }
 
+            for (Message m : messages) {
+	            for (final MessagingListener l : getListeners()) {
+	            	l.messageDeleted(account, folder, m);
+	            	if (localTrashFolder != null) {
+	            		l.synchronizeMailboxAddOrUpdateMessage(account, localTrashFolder.getName(), m);
+	            	}
+	            }
+            }
+
             for (MessagingListener l : getListeners()) {
                 l.folderStatusChanged(account, folder, localFolder.getUnreadMessageCount());
                 if (localTrashFolder != null) {
@@ -4324,17 +4325,17 @@ public class MessagingController implements Runnable {
                     LocalStore localStore = account.getLocalStore();
                     localFolder = localStore.getFolder(remoteFolder.getName());
                     localFolder.open(OpenMode.READ_WRITE);
-                    
+
                     MessageFilter filter = new MessageFilter(false);
-                    filter.addCriterion(new FilteringCriterion(FilteringCriterion.Operation.CONTAINS, "spam")); 
+                    filter.addCriterion(new FilteringCriterion(FilteringCriterion.Operation.CONTAINS, "spam"));
 
                     account.setRingNotified(false);
                     int newCount = downloadMessages(account, remoteFolder, localFolder, messages, flagSyncOnly, filter);
                     int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  messages.size());
-                    
+
                     //apply actions resulting from message filters
-                    unreadMessageCount -= filter.performActions(controller);
-                    
+                    unreadMessageCount -= filter.performActions(controller, localFolder);
+
                     setLocalFlaggedCountToRemote(localFolder, remoteFolder);
 
                     localFolder.setLastPush(System.currentTimeMillis());

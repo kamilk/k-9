@@ -1856,6 +1856,13 @@ public class MessageList
                     holder.message.setUid(newUid);
                 }
             }
+
+            @Override
+            public void messageDeleted(Account account, String folder, Message message) {
+            	//find MessageInfoHolder corresponding to the message
+                MessageInfoHolder holder = mAdapter.getMessage(message);
+                mAdapter.removeMessage(holder);
+            }
         };
 
         private boolean updateForMe(Account account, String folder) {

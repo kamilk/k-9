@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
-import com.fsck.k9.mail.MessagingException;
+import com.fsck.k9.mail.store.LocalStore.LocalMessage;
+import com.fsck.k9.mail.store.LocalStore.LocalFolder;
 import com.fsck.k9.controller.MessagingController;
 
 /**
@@ -14,72 +15,81 @@ import com.fsck.k9.controller.MessagingController;
 public class MessageFilter {
 
 	ArrayList<FilteringCriterion> mCriteria = new ArrayList<FilteringCriterion>();
-    ArrayList<Message> mMessagesToDelete = new ArrayList<Message>();
-	boolean mAll; 
-	
+    ArrayList<LocalMessage> mMessagesToDelete = new ArrayList<LocalMessage>();
+    ArrayList<Message> mMessagesToMarkAsSeen = new ArrayList<Message>();
+	boolean mAll;
+
 	public MessageFilter(boolean all) {
-		mAll = all; 
+		mAll = all;
 	}
-	
+
 	public void addCriterion(FilteringCriterion criteria) {
-		mCriteria.add(criteria); 
+		mCriteria.add(criteria);
 	}
-	
+
     /**
      * Apply the filter to a message, performing appropriate actions if
      * necessary.
-     * 
+     *
      * @param message Remote message to be checked
+     * @param localMessage Local version of the filtered message
      *
      * @return true if the new message should appear in the folder view.
      *         false means there's no point displaying or downloading the message
-     * @throws MessagingException from Message.setFlag()
      */
-    public boolean applyToMessage(Message message) throws MessagingException {
+    public boolean applyToMessage(final Message message, final LocalMessage localMessage) {
     	if (mCriteria.isEmpty())
-    		return true; 
-    	
-    	boolean result; 
+    		return true;
+
+    	boolean result;
     	if (mAll) {
-    		result = true; 
+    		result = true;
     	} else {
     		result = false;
     	}
-    	
+
     	for (FilteringCriterion criterion : mCriteria) {
-    		boolean isMet = criterion.check(message); 
+    		boolean isMet = criterion.check(message);
     		if (mAll) {
     			result &= isMet;
     			if (!result) {
     				//should be all, one is unmet
-    				mMessagesToDelete.add(message);
-    				return false; 
+    				mMessagesToDelete.add(localMessage);
+    				mMessagesToMarkAsSeen.add(message);
+    				return false;
     			}
     		} else {
-    			result |= isMet; 
+    			result |= isMet;
     			if (result) {
     				//should be any, one is met
-    				mMessagesToDelete.add(message);
-    				return false; 
+    				mMessagesToDelete.add(localMessage);
+    				mMessagesToMarkAsSeen.add(message);
+    				return false;
     			}
     		}
     	}
-    	
-    	return !result; 
+
+    	return !result;
     }
-    
+
     /**
-     * Performs actions according to the results of the filtering. 
+     * Performs actions according to the results of the filtering.
      * @param controller Controller to deal with the message
-     * @return How many messages have been automatically marked as seen. 
+     * @param folderUpdated Currently display folder. May be null.
+     * @return How many messages in the current have been automatically marked as seen.
      */
-    public int performActions(final MessagingController controller) {
-    	int howManySeen = 0; 
+    public int performActions(final MessagingController controller, final LocalFolder currentFolder) {
+    	int howManySeen = 0;
     	for (Message message : mMessagesToDelete) {
-    		controller.setFlag(new Message[]{message}, Flag.SEEN, true);
-    		++howManySeen; 
-    		controller.deleteMessages(new Message[]{message}, null); 
+    		controller.deleteMessages(new Message[]{message}, null);
     	}
-    	return howManySeen; 
-    } 
+
+    	for (Message message : mMessagesToMarkAsSeen) {
+    		controller.setFlag(new Message[]{message}, Flag.SEEN, true);
+    		if (currentFolder != null && message.getFolder().getName().equals(currentFolder.getName())) {
+    			++howManySeen;
+    		}
+        }
+        return howManySeen;
+    }
 }
