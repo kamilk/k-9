@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" android:scrollbarStyle="insideInset" android:orientation="vertical">
+    <TextView android:id="@+id/textView1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/account_settings_filter_name"></TextView>
+    <EditText android:layout_width="fill_parent" android:id="@+id/editText1" android:layout_height="wrap_content"></EditText>
+    <TextView android:id="@+id/textView2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/account_settings_filter_any_or_all_begin"></TextView>
+    <RadioGroup android:id="@+id/radioGroup1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:baselineAligned="false" android:orientation="horizontal">
+        <RadioButton android:id="@+id/radio0" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="@string/account_settings_filter_all"></RadioButton>
+        <RadioButton android:id="@+id/radio1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/account_settings_filter_any"></RadioButton>
+    </RadioGroup>
+    <TextView android:layout_width="wrap_content" android:id="@+id/textView3" android:text="@string/account_settings_filter_any_or_all_end" android:layout_height="wrap_content"></TextView>
+    <LinearLayout android:id="@+id/linearLayout2" android:layout_height="wrap_content" android:layout_width="fill_parent">
+        <Spinner android:id="@+id/spinner1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
+        <Spinner android:id="@+id/spinner2" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
+    </LinearLayout>
+    <TextView android:layout_width="wrap_content" android:id="@+id/textView4" android:text="@string/account_settings_filter_actions_heading" android:layout_height="wrap_content"></TextView>
+    <CheckBox android:text="CheckBox" android:id="@+id/checkBox1" android:layout_width="wrap_content" android:layout_height="wrap_content"></CheckBox>
+    <CheckBox android:text="CheckBox" android:id="@+id/checkBox2" android:layout_width="wrap_content" android:layout_height="wrap_content"></CheckBox>
+</LinearLayout>

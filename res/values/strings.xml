@@ -1034,5 +1034,18 @@ Welcome to K-9 Mail setup.  K-9 is an open source mail client for Android origin
     <string name="error_unable_to_connect">Unable to connect.</string>
 
     <string name="account_unavailable">Account \"<xliff:g id="account">%s</xliff:g>\" is unavailable; check storage</string>
+    <string name="account_settings_filter">Message filters</string>
+    <string name="account_settings_filter_name">Name the filter:</string>
+    <string name="account_settings_filter_any_or_all_begin">When a message matches...</string>
+    <string name="account_settings_filter_all">all</string>
+    <string name="account_settings_filter_any">any</string>
+    <string name="account_settings_filter_any_or_all_end">...of the following:</string>
+    <string name="account_settings_filter_actions_heading">...do:</string>
+    
+    
+    
+    
+    
+    
     
 </resources>
