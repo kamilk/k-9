@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="fill_parent">
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
     <Button android:text="Button" android:id="@+id/button1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
     <Spinner android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/criterion_field" android:entries="@array/account_settings_filter_criterion_field"></Spinner>
     <Spinner android:id="@+id/spinner2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:entries="@array/account_settings_filter_criterion_operand"></Spinner>
-    <EditText android:layout_width="fill_parent" android:id="@+id/editText1" android:layout_height="wrap_content" android:text="@string/about_header"></EditText>
+    <EditText android:layout_width="fill_parent" android:id="@+id/editText1" android:layout_height="wrap_content"></EditText>
 </LinearLayout>
