@@ -87,11 +87,11 @@ public class MessageFilter {
     public int performActions(final MessagingController controller, final LocalFolder currentFolder) {
         int howManySeen = 0;
         for (Message message : mMessagesToDelete) {
-            controller.deleteMessages(new Message[]{message}, null);
+            controller.deleteMessages(new Message[] {message}, null);
         }
 
         for (Message message : mMessagesToMarkAsSeen) {
-            controller.setFlag(new Message[]{message}, Flag.SEEN, true);
+            controller.setFlag(new Message[] {message}, Flag.SEEN, true);
             if (currentFolder != null && message.getFolder().getName().equals(currentFolder.getName())) {
                 ++howManySeen;
             }

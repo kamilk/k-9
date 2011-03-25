@@ -10,39 +10,38 @@ import com.fsck.k9.mail.MessagingException;
  *   (like From and To)
  */
 public class AddressCriterion extends FilteringCriterion {
-	public enum Field {
-		FROM, TO
-	}
+    public enum Field {
+        FROM, TO
+    }
 
-	Field mField;
+    Field mField;
 
-	public AddressCriterion(Field field, String value) {
-		super(value);
-		mField = field;
-	}
+    public AddressCriterion(Field field, String value) {
+        super(value);
+        mField = field;
+    }
 
-	@Override
-	public boolean check(Message message) throws MessagingException {
-		Address[] addresses = null;
+    @Override
+    public boolean check(Message message) throws MessagingException {
+        Address[] addresses = null;
 
-		switch(mField)
-		{
-		case FROM:
-			addresses = message.getFrom();
-			break;
-		case TO:
-			addresses = message.getRecipients(RecipientType.TO);
-			break;
-		}
+        switch (mField) {
+        case FROM:
+            addresses = message.getFrom();
+            break;
+        case TO:
+            addresses = message.getRecipients(RecipientType.TO);
+            break;
+        }
 
-		if (addresses == null)
-			return false;
+        if (addresses == null)
+            return false;
 
-		for (Address address : addresses) {
-			if(address.getAddress().equalsIgnoreCase(mReferenceValue))
-				return true;
-		}
-		return false;
-	}
+        for (Address address : addresses) {
+            if (address.getAddress().equalsIgnoreCase(mReferenceValue))
+                return true;
+        }
+        return false;
+    }
 
 }

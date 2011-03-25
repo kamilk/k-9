@@ -827,10 +827,10 @@ public class AccountSettings extends K9PreferenceActivity {
     }
 
     public void onFilterSettings() {
-        try{
+        try {
             Intent intent = new Intent(this, MessageFilterEdit.class);
             startActivity(intent);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.getCause();
         }
     }
