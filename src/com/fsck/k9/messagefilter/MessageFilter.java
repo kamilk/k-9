@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
+import com.fsck.k9.mail.MessagingException;
 import com.fsck.k9.mail.store.LocalStore.LocalMessage;
 import com.fsck.k9.mail.store.LocalStore.LocalFolder;
 import com.fsck.k9.controller.MessagingController;
@@ -19,6 +20,10 @@ public class MessageFilter {
     ArrayList<Message> mMessagesToMarkAsSeen = new ArrayList<Message>();
     boolean mAll;
 
+    /**
+     * Create a new filter
+     * @param all True, if all criteria should be met, false if any is enough.
+     */
     public MessageFilter(boolean all) {
         mAll = all;
     }
@@ -36,8 +41,9 @@ public class MessageFilter {
      *
      * @return true if the new message should appear in the folder view.
      *         false means there's no point displaying or downloading the message
+     * @throws MessagingException
      */
-    public boolean applyToMessage(final Message message, final LocalMessage localMessage) {
+    public boolean applyToMessage(final Message message, final LocalMessage localMessage) throws MessagingException {
         if (mCriteria.isEmpty())
             return true;
 

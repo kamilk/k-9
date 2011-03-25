@@ -64,8 +64,11 @@ import com.fsck.k9.mail.store.UnavailableStorageException;
 import com.fsck.k9.mail.store.LocalStore.LocalFolder;
 import com.fsck.k9.mail.store.LocalStore.LocalMessage;
 import com.fsck.k9.mail.store.LocalStore.PendingCommand;
+import com.fsck.k9.messagefilter.AddressCriterion;
+import com.fsck.k9.messagefilter.AddressCriterion.Field;
 import com.fsck.k9.messagefilter.FilteringCriterion;
 import com.fsck.k9.messagefilter.MessageFilter;
+import com.fsck.k9.messagefilter.SubjectCriterion;
 
 
 /**
@@ -1030,7 +1033,8 @@ public class MessagingController implements Runnable {
              * Now we download the actual content of messages.
              */
             MessageFilter filter = new MessageFilter(false);
-            filter.addCriterion(new FilteringCriterion(FilteringCriterion.Operation.CONTAINS, "spam"));
+            filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
+            //filter.addCriterion(new AddressCriterion(AddressCriterion.Field.FROM, "llampak@gmail.com"));
             int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false, filter);
             int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
 
@@ -4327,7 +4331,7 @@ public class MessagingController implements Runnable {
                     localFolder.open(OpenMode.READ_WRITE);
 
                     MessageFilter filter = new MessageFilter(false);
-                    filter.addCriterion(new FilteringCriterion(FilteringCriterion.Operation.CONTAINS, "spam"));
+                    filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
 
                     account.setRingNotified(false);
                     int newCount = downloadMessages(account, remoteFolder, localFolder, messages, flagSyncOnly, filter);
