@@ -11,11 +11,7 @@
         <RadioButton android:id="@+id/radio1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/account_settings_filter_any"></RadioButton>
     </RadioGroup>
     <TextView android:layout_width="wrap_content" android:id="@+id/textView3" android:text="@string/account_settings_filter_any_or_all_end" android:layout_height="wrap_content"></TextView>
-    <LinearLayout android:id="@+id/linearLayout2" android:layout_height="wrap_content" android:layout_width="fill_parent">
-        <Spinner android:id="@+id/spinner1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
-        <Spinner android:id="@+id/spinner2" android:layout_width="wrap_content" android:layout_height="wrap_content"></Spinner>
-    </LinearLayout>
+    <LinearLayout android:layout_width="fill_parent" android:id="@+id/criterion_list" android:layout_height="wrap_content"  android:orientation="vertical"></LinearLayout>
     <TextView android:layout_width="wrap_content" android:id="@+id/textView4" android:text="@string/account_settings_filter_actions_heading" android:layout_height="wrap_content"></TextView>
     <CheckBox android:text="CheckBox" android:id="@+id/checkBox1" android:layout_width="wrap_content" android:layout_height="wrap_content"></CheckBox>
-    <CheckBox android:text="CheckBox" android:id="@+id/checkBox2" android:layout_width="wrap_content" android:layout_height="wrap_content"></CheckBox>
 </LinearLayout>

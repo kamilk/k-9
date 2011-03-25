@@ -1041,5 +1041,6 @@ Welcome to K-9 Mail setup.  K-9 is an open source mail client for Android origin
     <string name="account_settings_filter_any">any</string>
     <string name="account_settings_filter_any_or_all_end">...of the following:</string>
     <string name="account_settings_filter_actions_heading">...do:</string>
+    <string name="account_settings_filter_edit_label">Message filter</string>
 
 </resources>

@@ -29,6 +29,7 @@ import com.fsck.k9.activity.ChooseIdentity;
 import com.fsck.k9.activity.ColorPickerDialog;
 import com.fsck.k9.activity.K9PreferenceActivity;
 import com.fsck.k9.activity.ManageIdentities;
+import com.fsck.k9.activity.MessageFilterEdit;
 import com.fsck.k9.crypto.Apg;
 import com.fsck.k9.mail.Store;
 import com.fsck.k9.service.MailService;
@@ -91,6 +92,8 @@ public class AccountSettings extends K9PreferenceActivity {
     private static final String PREFERENCE_SYNC_REMOTE_DELETIONS = "account_sync_remote_deletetions";
     private static final String PREFERENCE_CRYPTO_APP = "crypto_app";
     private static final String PREFERENCE_CRYPTO_AUTO_SIGNATURE = "crypto_auto_signature";
+    private static final String PREFERENCE_FILTER = "filter";
+
 
     private static final String PREFERENCE_LOCAL_STORAGE_PROVIDER = "local_storage_provider";
 
@@ -644,6 +647,15 @@ public class AccountSettings extends K9PreferenceActivity {
             }
         });
 
+        findPreference(PREFERENCE_FILTER).setOnPreferenceClickListener(
+        new Preference.OnPreferenceClickListener() {
+            //@Override
+            public boolean onPreferenceClick(Preference preference) {
+                onFilterSettings();
+                return true;
+            }
+        });
+
         mCryptoAutoSignature = (CheckBoxPreference) findPreference(PREFERENCE_CRYPTO_AUTO_SIGNATURE);
         mCryptoAutoSignature.setChecked(mAccount.getCryptoAutoSignature());
 
@@ -812,6 +824,15 @@ public class AccountSettings extends K9PreferenceActivity {
         selectIntent.putExtra(ChooseFolder.EXTRA_SHOW_FOLDER_NONE, "yes");
         selectIntent.putExtra(ChooseFolder.EXTRA_SHOW_DISPLAYABLE_ONLY, "yes");
         startActivityForResult(selectIntent, SELECT_AUTO_EXPAND_FOLDER);
+    }
+
+    public void onFilterSettings() {
+        try{
+            Intent intent = new Intent(this, MessageFilterEdit.class);
+            startActivity(intent);
+        } catch(Exception e) {
+            e.getCause();
+        }
     }
 
     private String translateFolder(String in) {

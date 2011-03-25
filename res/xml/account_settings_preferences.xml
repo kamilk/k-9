@@ -458,11 +458,7 @@
     
     <PreferenceScreen
         android:title="@string/account_settings_filter"
-        android:key="crypto">
-            <PreferenceScreen
-                android:key="crypto"
-                android:layout="@layout/message_filter_edit">
-            </PreferenceScreen>
+        android:key="filter">
     </PreferenceScreen>
 
 </PreferenceScreen>

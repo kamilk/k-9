@@ -269,6 +269,12 @@
             android:name="com.fsck.k9.activity.AccessibleEmailContentActivity"
             >
         </activity>
+        <activity 
+            android:theme="@style/Theme.K9Dialog" 
+            android:name="com.fsck.k9.activity.MessageFilterEdit" 
+            android:label="@string/account_settings_filter_edit_label"
+            >
+        </activity>
 
         <receiver android:name="com.fsck.k9.service.BootReceiver"
               android:enabled="true"
@@ -370,7 +376,7 @@ otherwise it would make K-9 start at the wrong time
             android:multiprocess="true"
             android:grantUriPermissions="true"
             android:readPermission="com.fsck.k9.permission.READ_ATTACHMENT"
-            />
+            ></provider>
         <provider
             android:name="com.fsck.k9.provider.MessageProvider"
             android:authorities="com.fsck.k9.messageprovider"
@@ -378,6 +384,7 @@ otherwise it would make K-9 start at the wrong time
             android:grantUriPermissions="true"
             android:readPermission="com.fsck.k9.permission.READ_MESSAGES"
             android:writePermission="com.fsck.k9.permission.DELETE_MESSAGES"
-            />
+            ></provider>
+        
     </application>
 </manifest>
