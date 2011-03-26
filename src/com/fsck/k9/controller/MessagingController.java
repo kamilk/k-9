@@ -66,7 +66,6 @@ import com.fsck.k9.mail.store.LocalStore.LocalMessage;
 import com.fsck.k9.mail.store.LocalStore.PendingCommand;
 import com.fsck.k9.messagefilter.AddressCriterion;
 import com.fsck.k9.messagefilter.AddressCriterion.Field;
-import com.fsck.k9.messagefilter.FilteringCriterion;
 import com.fsck.k9.messagefilter.MessageFilter;
 import com.fsck.k9.messagefilter.SubjectCriterion;
 
@@ -1034,7 +1033,7 @@ public class MessagingController implements Runnable {
              */
             MessageFilter filter = new MessageFilter(false);
             filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
-            //filter.addCriterion(new AddressCriterion(AddressCriterion.Field.FROM, "llampak@gmail.com"));
+            //filter.addCriterion(new AddressCriterion(AddressCriterion.Field.FROM, "kamilkaczm@gmail.com"));
             int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false, filter);
             int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
 
