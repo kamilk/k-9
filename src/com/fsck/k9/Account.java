@@ -119,6 +119,7 @@ public class Account implements BaseAccount {
     private boolean mSyncRemoteDeletions;
     private String mCryptoApp;
     private boolean mCryptoAutoSignature;
+    private AccountDatabase mAccountDatabase = null;
 
     private CryptoProvider mCryptoProvider = null;
 
@@ -1342,4 +1343,17 @@ public class Account implements BaseAccount {
         return StorageManager.getInstance(K9.app).isReady(localStorageProviderId);
     }
 
+    /**
+     * Gets an AccountDatabase object associating the account with a database.
+     * The object is created if it didn't exist.
+     * @return AccountDatabase object for this account
+     * @throws MessagingException
+     */
+    public AccountDatabase getAccountDatabase() {
+        if (mAccountDatabase == null) {
+            mAccountDatabase = new AccountDatabase(getUuid(), K9.app);
+        }
+
+        return mAccountDatabase;
+    }
 }

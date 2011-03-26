@@ -28,6 +28,8 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.fsck.k9.Account;
+import com.fsck.k9.AccountDatabase;
+import com.fsck.k9.AccountDatabaseUpgradeListener;
 import com.fsck.k9.AccountStats;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
@@ -99,8 +101,6 @@ public class LocalStore extends Store implements Serializable {
     static private String GET_FOLDER_COLS = "id, name, unread_count, visible_limit, last_updated, status, push_state, last_pushed, flagged_count, integrate, top_group, poll_class, push_class, display_class";
 
 
-    protected static final int DB_VERSION = 42;
-
     protected String uUid = null;
 
     private final Application mApplication;
@@ -116,7 +116,9 @@ public class LocalStore extends Store implements Serializable {
      */
     public LocalStore(final Account account, final Application application) throws MessagingException {
         super(account);
-        database = new LockableDatabase(application, account.getUuid(), new StoreSchemaDefinition());
+        AccountDatabase accountDb = account.getAccountDatabase();
+        accountDb.addListener(new StoreSchemaDefinition());
+        database = accountDb.getDatabase();
 
         mApplication = application;
         database.setStorageProviderId(account.getLocalStorageProviderId());
@@ -133,19 +135,14 @@ public class LocalStore extends Store implements Serializable {
         return Preferences.getPreferences(mApplication).getPreferences();
     }
 
-    private class StoreSchemaDefinition implements LockableDatabase.SchemaDefinition {
+    private class StoreSchemaDefinition extends AccountDatabaseUpgradeListener {
         @Override
-        public int getVersion() {
-            return DB_VERSION;
-        }
-
-        @Override
-        public void doDbUpgrade(final SQLiteDatabase db) {
-            Log.i(K9.LOG_TAG, String.format("Upgrading database from version %d to version %d",
-                                            db.getVersion(), DB_VERSION));
+        public void onDatabaseUpgrade(final AccountDatabase accountDb, final SQLiteDatabase db) {
+            Log.i(K9.LOG_TAG, String.format("Upgrading LocalStore database from version %d to version %d",
+                                            db.getVersion(), accountDb.getVersion()));
 
 
-            AttachmentProvider.clear(mApplication);
+            AttachmentProvider.clear(accountDb.getApplication());
 
             try {
                 // schema version 29 was when we moved to incremental updates
@@ -334,14 +331,6 @@ public class LocalStore extends Store implements Serializable {
                 Log.e(K9.LOG_TAG, "Exception while upgrading database. Resetting the DB to v0");
                 db.setVersion(0);
                 throw new Error("Database upgrade failed! Resetting your DB version to 0 to force a full schema recreation.");
-            }
-
-
-
-            db.setVersion(DB_VERSION);
-
-            if (db.getVersion() != DB_VERSION) {
-                throw new Error("Database upgrade failed!");
             }
 
             // Unless we're blowing away the whole data store, there's no reason to prune attachments
