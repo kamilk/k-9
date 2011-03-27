@@ -12,7 +12,7 @@ import android.util.Log;
  * Handles the database for a particular account
  */
 public class AccountDatabase {
-    protected static final int DB_VERSION = 42;
+    protected static final int DB_VERSION = 43;
     private final Application mApplication;
     protected String uUid = null;
     private LockableDatabase database;
@@ -73,7 +73,10 @@ public class AccountDatabase {
     }
 
     /**
-     * Add the listener which is to be notified when the database is upgraded
+     * Add the listener which is to be notified when the database is upgraded.
+     * <p>
+     * All listeners should be added before the database is opened.
+     * </p>
      * @param listener
      */
     public void addListener(AccountDatabaseUpgradeListener listener) {

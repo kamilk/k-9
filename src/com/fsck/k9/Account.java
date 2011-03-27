@@ -16,6 +16,7 @@ import com.fsck.k9.mail.Store;
 import com.fsck.k9.mail.store.LocalStore;
 import com.fsck.k9.mail.store.StorageManager;
 import com.fsck.k9.mail.store.StorageManager.StorageProvider;
+import com.fsck.k9.messagefilter.MessageFilterManager;
 import com.fsck.k9.view.ColorChip;
 
 import java.util.ArrayList;
@@ -120,6 +121,7 @@ public class Account implements BaseAccount {
     private String mCryptoApp;
     private boolean mCryptoAutoSignature;
     private AccountDatabase mAccountDatabase = null;
+    private MessageFilterManager mMessageFilterManager;
 
     private CryptoProvider mCryptoProvider = null;
 
@@ -196,6 +198,7 @@ public class Account implements BaseAccount {
         mSyncRemoteDeletions = true;
         mCryptoApp = Apg.NAME;
         mCryptoAutoSignature = false;
+        mMessageFilterManager = new MessageFilterManager(this);
 
         searchableFolders = Searchable.ALL;
 
@@ -356,6 +359,8 @@ public class Account implements BaseAccount {
 
         mCryptoApp = prefs.getString(mUuid + ".cryptoApp", Apg.NAME);
         mCryptoAutoSignature = prefs.getBoolean(mUuid + ".cryptoAutoSignature", false);
+
+        mMessageFilterManager = new MessageFilterManager(this);
     }
 
 
