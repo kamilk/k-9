@@ -16,7 +16,9 @@ import com.fsck.k9.mail.Store;
 import com.fsck.k9.mail.store.LocalStore;
 import com.fsck.k9.mail.store.StorageManager;
 import com.fsck.k9.mail.store.StorageManager.StorageProvider;
+import com.fsck.k9.messagefilter.MessageFilter;
 import com.fsck.k9.messagefilter.MessageFilterManager;
+import com.fsck.k9.messagefilter.SubjectCriterion;
 import com.fsck.k9.view.ColorChip;
 
 import java.util.ArrayList;
@@ -199,6 +201,9 @@ public class Account implements BaseAccount {
         mCryptoApp = Apg.NAME;
         mCryptoAutoSignature = false;
         mMessageFilterManager = new MessageFilterManager(this);
+        MessageFilter filter = new MessageFilter("debug", false);
+        filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
+        mMessageFilterManager.addFilter(filter);
 
         searchableFolders = Searchable.ALL;
 
@@ -1360,5 +1365,9 @@ public class Account implements BaseAccount {
         }
 
         return mAccountDatabase;
+    }
+
+    public MessageFilterManager getMessageFilterManager() {
+    	return mMessageFilterManager;
     }
 }

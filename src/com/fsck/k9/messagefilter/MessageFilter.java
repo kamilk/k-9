@@ -19,12 +19,14 @@ public class MessageFilter {
     ArrayList<LocalMessage> mMessagesToDelete = new ArrayList<LocalMessage>();
     ArrayList<Message> mMessagesToMarkAsSeen = new ArrayList<Message>();
     boolean mAll;
+    String mName;
 
     /**
      * Create a new filter
      * @param all True, if all criteria should be met, false if any is enough.
      */
-    public MessageFilter(boolean all) {
+    public MessageFilter(String name, boolean all) {
+    	mName = name;
         mAll = all;
     }
 
@@ -97,5 +99,9 @@ public class MessageFilter {
             }
         }
         return howManySeen;
+    }
+
+    String getName() {
+    	return mName;
     }
 }

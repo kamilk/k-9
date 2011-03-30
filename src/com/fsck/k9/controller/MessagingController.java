@@ -64,10 +64,7 @@ import com.fsck.k9.mail.store.UnavailableStorageException;
 import com.fsck.k9.mail.store.LocalStore.LocalFolder;
 import com.fsck.k9.mail.store.LocalStore.LocalMessage;
 import com.fsck.k9.mail.store.LocalStore.PendingCommand;
-import com.fsck.k9.messagefilter.AddressCriterion;
-import com.fsck.k9.messagefilter.AddressCriterion.Field;
-import com.fsck.k9.messagefilter.MessageFilter;
-import com.fsck.k9.messagefilter.SubjectCriterion;
+import com.fsck.k9.messagefilter.MessageFilterManager;
 
 
 /**
@@ -1031,8 +1028,7 @@ public class MessagingController implements Runnable {
             /*
              * Now we download the actual content of messages.
              */
-            MessageFilter filter = new MessageFilter(false);
-            filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
+            MessageFilterManager filter = account.getMessageFilterManager();
             //filter.addCriterion(new AddressCriterion(AddressCriterion.Field.FROM, "kamilkaczm@gmail.com"));
             int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false, filter);
             int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
@@ -1174,7 +1170,7 @@ public class MessagingController implements Runnable {
     }
 
     private int downloadMessages(final Account account, final Folder remoteFolder,
-                                 final LocalFolder localFolder, List<Message> inputMessages, boolean flagSyncOnly, final MessageFilter filter) throws MessagingException {
+                                 final LocalFolder localFolder, List<Message> inputMessages, boolean flagSyncOnly, final MessageFilterManager filter) throws MessagingException {
         final Date earliestDate = account.getEarliestPollDate();
         Date downloadStarted = new Date(); // now
 
@@ -1397,7 +1393,7 @@ public class MessagingController implements Runnable {
                                        final AtomicInteger progress,
                                        final int todo,
                                        FetchProfile fp,
-                                       final MessageFilter filter) throws MessagingException {
+                                       final MessageFilterManager filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -1545,7 +1541,7 @@ public class MessagingController implements Runnable {
                                        final AtomicInteger newMessages,
                                        final int todo,
                                        FetchProfile fp,
-                                       final MessageFilter filter) throws MessagingException {
+                                       final MessageFilterManager filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -1623,7 +1619,7 @@ public class MessagingController implements Runnable {
                                        final AtomicInteger newMessages,
                                        final int todo,
                                        FetchProfile fp,
-                                       final MessageFilter filter) throws MessagingException {
+                                       final MessageFilterManager filter) throws MessagingException {
         final String folder = remoteFolder.getName();
 
         final Date earliestDate = account.getEarliestPollDate();
@@ -4329,8 +4325,7 @@ public class MessagingController implements Runnable {
                     localFolder = localStore.getFolder(remoteFolder.getName());
                     localFolder.open(OpenMode.READ_WRITE);
 
-                    MessageFilter filter = new MessageFilter(false);
-                    filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
+                    MessageFilterManager filter = account.getMessageFilterManager();
 
                     account.setRingNotified(false);
                     int newCount = downloadMessages(account, remoteFolder, localFolder, messages, flagSyncOnly, filter);
