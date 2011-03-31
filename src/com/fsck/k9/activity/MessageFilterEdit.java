@@ -19,7 +19,6 @@ import com.fsck.k9.messagefilter.AddressCriterion.Field;
 import com.fsck.k9.messagefilter.FilteringCriterion;
 import com.fsck.k9.messagefilter.MessageFilter;
 import com.fsck.k9.messagefilter.SubjectCriterion;
-import com.fsck.k9.messagefilter.SubjectCriterion.Operand;
 
 /**
  * Message filter editor
