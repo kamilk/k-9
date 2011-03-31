@@ -1,5 +1,7 @@
 package com.fsck.k9.messagefilter;
 
+import android.content.ContentValues;
+
 import com.fsck.k9.mail.Message;
 
 /**
@@ -33,4 +35,20 @@ public class SubjectCriterion extends FilteringCriterion {
         }
         return false;
     }
+
+	@Override
+	public ContentValues getDatabaseValues() {
+		ContentValues result = new ContentValues();
+		result.put("field", MessageFilterManager.FIELD_SUBJECT);
+		switch(mOperand) {
+		case CONTAINS:
+			result.put("operand", MessageFilterManager.OPERAND_STRING_CONTAINS);
+			break;
+		case EQUALS:
+			result.put("operand", MessageFilterManager.OPERAND_STRING_IS);
+			break;
+		}
+		result.put("reference_string", mReferenceValue);
+		return result;
+	}
 }

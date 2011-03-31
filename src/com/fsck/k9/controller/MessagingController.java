@@ -1029,7 +1029,7 @@ public class MessagingController implements Runnable {
              * Now we download the actual content of messages.
              */
             MessageFilterManager filter = account.getMessageFilterManager();
-            //filter.addCriterion(new AddressCriterion(AddressCriterion.Field.FROM, "kamilkaczm@gmail.com"));
+            //filter.save();
             int newMessages = downloadMessages(account, remoteFolder, localFolder, remoteMessages, false, filter);
             int unreadMessageCount = setLocalUnreadCountToRemote(localFolder, remoteFolder,  newMessages);
 

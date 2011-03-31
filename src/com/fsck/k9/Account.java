@@ -366,6 +366,9 @@ public class Account implements BaseAccount {
         mCryptoAutoSignature = prefs.getBoolean(mUuid + ".cryptoAutoSignature", false);
 
         mMessageFilterManager = new MessageFilterManager(this);
+        MessageFilter filter = new MessageFilter("debug", false);
+        filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
+        mMessageFilterManager.addFilter(filter);
     }
 
 

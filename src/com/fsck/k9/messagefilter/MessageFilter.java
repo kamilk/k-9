@@ -20,6 +20,7 @@ public class MessageFilter {
     ArrayList<Message> mMessagesToMarkAsSeen = new ArrayList<Message>();
     boolean mAll;
     String mName;
+    long mDatabaseId;
 
     /**
      * Create a new filter
@@ -28,6 +29,7 @@ public class MessageFilter {
     public MessageFilter(String name, boolean all) {
     	mName = name;
         mAll = all;
+        mDatabaseId = -1;
     }
 
     public void addCriterion(FilteringCriterion criteria) {
@@ -103,5 +105,22 @@ public class MessageFilter {
 
     String getName() {
     	return mName;
+    }
+
+    public ArrayList<FilteringCriterion> getCriteria() {
+    	return mCriteria;
+    }
+
+    /**
+     * Get the id of the current criterion in the database.
+     * -1 if the criterion is not yet in the database.
+     * @return
+     */
+    public long getDatabaseId() {
+    	return mDatabaseId;
+    }
+
+    public void setDatabaseId(long id) {
+    	mDatabaseId = id;
     }
 }

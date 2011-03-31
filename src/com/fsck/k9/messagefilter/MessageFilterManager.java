@@ -2,6 +2,7 @@ package com.fsck.k9.messagefilter;
 
 import java.util.ArrayList;
 
+import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
@@ -22,6 +23,13 @@ import com.fsck.k9.mail.store.UnavailableStorageException;
  * Manager of multiple message filters for a particular account
  */
 public class MessageFilterManager {
+	public static final int FIELD_SUBJECT = 1;
+	public static final int FIELD_FROM = 2;
+	public static final int FIELD_TO = 3;
+
+	public static final int OPERAND_STRING_IS = 1;
+	public static final int OPERAND_STRING_CONTAINS = 2;
+
     private AccountDatabase mAccountDatabase;
     private ArrayList<MessageFilter> mFilters = new ArrayList<MessageFilter>();
 
@@ -44,13 +52,43 @@ public class MessageFilterManager {
         mAccountDatabase.addListener(new MessageFilterSchemaDefinition());
     }
 
+    /**
+     * Save all the filters to the database
+     * @throws UnavailableStorageException
+     */
     public void save() throws UnavailableStorageException {
     	mAccountDatabase.getDatabase().execute(false, new DbCallback<Void>() {
             @Override
             public Void doDbWork(final SQLiteDatabase db) throws WrappedException {
             	for (MessageFilter filter : mFilters) {
-            		//TODO
-            		db.execSQL("INSERT INTO filters (name) VALUES (?)", new Object[]{ filter.getName() });
+            		//db.execSQL("INSERT OR REPLACE INTO filters (name) VALUES (?)", new Object[]{ filter.getName() });
+            		ContentValues filter_values = new ContentValues();
+            		filter_values.put("name", filter.getName());
+
+            		long filter_id = filter.getDatabaseId();
+            		//insert of update
+            		if (filter_id < 0) {
+            			filter_id = db.insertOrThrow("filters", null, filter_values);
+            			filter.setDatabaseId(filter_id);
+            		} else {
+            			//the filter is already in the database
+            			db.update("filters", filter_values, "id=?", new String[]{Long.toString(filter_id)});
+            		}
+
+            		for (FilteringCriterion criterion : filter.getCriteria()) {
+            			String table = criterion.getDatabaseTableName();
+            			ContentValues values = criterion.getDatabaseValues();
+            			values.put("filter_id", filter_id);
+
+            			long criterion_id = criterion.getDatabaseId();
+            			//insert or update
+            			if (criterion_id < 0) {
+            				criterion_id = db.insertOrThrow(table, null, values);
+            				criterion.setDatabaseId(criterion_id);
+            			} else {
+            				db.update(table, values, "id=?", new String[]{Long.toString(criterion_id)});
+            			}
+            		}
             	}
             	return null;
             }
@@ -62,8 +100,7 @@ public class MessageFilterManager {
     }
 
     /**
-     * Apply all the filters to a message, performing appropriate actions if
-     * necessary.
+     * Apply all the filters to a message, remembering actions to perform.
      *
      * @param message Remote message to be checked
      * @param localMessage Local version of the filtered message

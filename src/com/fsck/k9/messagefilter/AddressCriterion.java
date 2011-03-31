@@ -1,5 +1,7 @@
 package com.fsck.k9.messagefilter;
 
+import android.content.ContentValues;
+
 import com.fsck.k9.mail.Address;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.Message.RecipientType;
@@ -43,5 +45,21 @@ public class AddressCriterion extends FilteringCriterion {
         }
         return false;
     }
+
+	@Override
+	public ContentValues getDatabaseValues() {
+		ContentValues result = new ContentValues();
+		switch(mField) {
+		case FROM:
+			result.put("field", MessageFilterManager.FIELD_FROM);
+			break;
+		case TO:
+			result.put("field", MessageFilterManager.FIELD_TO);
+			break;
+		}
+		result.put("operand", MessageFilterManager.OPERAND_STRING_CONTAINS);
+		result.put("reference_string", mReferenceValue);
+		return result;
+	}
 
 }
