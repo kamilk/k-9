@@ -1043,14 +1043,10 @@ Welcome to K-9 Mail setup.  K-9 is an open source mail client for Android origin
     <string name="account_settings_filter_actions_heading">...do:</string>
     <string name="account_settings_filter_edit_label">Message filter</string>
     <string name="account_settings_filter_add_new_criterion">add</string>
-    <string-array name="account_settings_filter_criterion_field">
-        <item>Subject</item>
-        <item>From</item>
-        <item>To</item>
-    </string-array>
-    <string-array name="account_settings_filter_criterion_operand">
-        <item>is</item>
-        <item>contains</item>
-    </string-array>
+    <string name="account_settings_filter_field_subject">Subject</string>
+    <string name="account_settings_filter_field_from">From</string>
+    <string name="account_settings_filter_field_to">To</string>
+    <string name="account_settings_filter_operand_is">is</string>
+    <string name="account_settings_filter_operand_contains">contains</string>
 
 </resources>

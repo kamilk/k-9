@@ -32,8 +32,8 @@ public class MessageFilter {
         mDatabaseId = -1;
     }
 
-    public void addCriterion(FilteringCriterion criteria) {
-        mCriteria.add(criteria);
+    public void addCriterion(FilteringCriterion criterion) {
+        mCriteria.add(criterion);
     }
 
     /**
