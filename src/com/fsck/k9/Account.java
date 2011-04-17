@@ -83,11 +83,13 @@ public class Account implements BaseAccount {
     private long mLatestOldMessageSeenTime;
     private boolean mNotifyNewMail;
     private boolean mNotifySelfNewMail;
+    private String mInboxFolderName;
     private String mDraftsFolderName;
     private String mSentFolderName;
     private String mTrashFolderName;
     private String mArchiveFolderName;
     private String mSpamFolderName;
+    private String mOutboxFolderName;
     private String mAutoExpandFolderName;
     private FolderMode mFolderDisplayMode;
     private FolderMode mFolderSyncMode;
@@ -185,7 +187,8 @@ public class Account implements BaseAccount {
         mEnableMoveButtons = false;
         mIsSignatureBeforeQuotedText = false;
         mExpungePolicy = EXPUNGE_IMMEDIATELY;
-        mAutoExpandFolderName = "INBOX";
+        mAutoExpandFolderName = K9.INBOX;
+        mInboxFolderName = K9.INBOX;
         mMaxPushFolders = 10;
         mChipColor = (new Random()).nextInt(0xffffff) + 0xff000000;
         goToUnreadMessageSearch = false;
@@ -255,11 +258,13 @@ public class Account implements BaseAccount {
         mNotifySelfNewMail = prefs.getBoolean(mUuid + ".notifySelfNewMail", true);
         mNotifySync = prefs.getBoolean(mUuid + ".notifyMailCheck", false);
         mDeletePolicy = prefs.getInt(mUuid + ".deletePolicy", 0);
+        mInboxFolderName = prefs.getString(mUuid  + ".inboxFolderName", K9.INBOX);
         mDraftsFolderName = prefs.getString(mUuid  + ".draftsFolderName", "Drafts");
         mSentFolderName = prefs.getString(mUuid  + ".sentFolderName", "Sent");
         mTrashFolderName = prefs.getString(mUuid  + ".trashFolderName", "Trash");
         mArchiveFolderName = prefs.getString(mUuid  + ".archiveFolderName", "Archive");
         mSpamFolderName = prefs.getString(mUuid  + ".spamFolderName", "Spam");
+        mOutboxFolderName = prefs.getString(mUuid + ".outboxFolderName", "Outbox");
         mExpungePolicy = prefs.getString(mUuid  + ".expungePolicy", EXPUNGE_IMMEDIATELY);
         mSyncRemoteDeletions = prefs.getBoolean(mUuid  + ".syncRemoteDeletions", true);
 
@@ -279,8 +284,7 @@ public class Account implements BaseAccount {
             compressionMap.put(type, useCompression);
         }
 
-        mAutoExpandFolderName = prefs.getString(mUuid  + ".autoExpandFolderName",
-                                                "INBOX");
+        mAutoExpandFolderName = prefs.getString(mUuid  + ".autoExpandFolderName", K9.INBOX);
 
         mAccountNumber = prefs.getInt(mUuid + ".accountNumber", 0);
 
@@ -408,6 +412,7 @@ public class Account implements BaseAccount {
         editor.remove(mUuid + ".trashFolderName");
         editor.remove(mUuid + ".archiveFolderName");
         editor.remove(mUuid + ".spamFolderName");
+        editor.remove(mUuid + ".outboxFolderName");
         editor.remove(mUuid + ".autoExpandFolderName");
         editor.remove(mUuid + ".accountNumber");
         editor.remove(mUuid + ".vibrate");
@@ -499,11 +504,13 @@ public class Account implements BaseAccount {
         editor.putBoolean(mUuid + ".notifySelfNewMail", mNotifySelfNewMail);
         editor.putBoolean(mUuid + ".notifyMailCheck", mNotifySync);
         editor.putInt(mUuid + ".deletePolicy", mDeletePolicy);
+        editor.putString(mUuid + ".inboxFolderName", mInboxFolderName);
         editor.putString(mUuid + ".draftsFolderName", mDraftsFolderName);
         editor.putString(mUuid + ".sentFolderName", mSentFolderName);
         editor.putString(mUuid + ".trashFolderName", mTrashFolderName);
         editor.putString(mUuid + ".archiveFolderName", mArchiveFolderName);
         editor.putString(mUuid + ".spamFolderName", mSpamFolderName);
+        editor.putString(mUuid + ".outboxFolderName", mOutboxFolderName);
         editor.putString(mUuid + ".autoExpandFolderName", mAutoExpandFolderName);
         editor.putInt(mUuid + ".accountNumber", mAccountNumber);
         editor.putString(mUuid + ".hideButtonsEnum", mScrollMessageViewButtons.name());
@@ -776,7 +783,7 @@ public class Account implements BaseAccount {
 
 
     public boolean isSpecialFolder(String folderName) {
-        if (folderName != null && (folderName.equalsIgnoreCase(K9.INBOX) ||
+        if (folderName != null && (folderName.equalsIgnoreCase(getInboxFolderName()) ||
                                    folderName.equals(getTrashFolderName()) ||
                                    folderName.equals(getDraftsFolderName()) ||
                                    folderName.equals(getArchiveFolderName()) ||
@@ -838,7 +845,11 @@ public class Account implements BaseAccount {
     }
 
     public synchronized String getOutboxFolderName() {
-        return K9.OUTBOX;
+        return mOutboxFolderName;
+    }
+
+    public synchronized void setOutboxFolderName(String outboxFolderName) {
+        mOutboxFolderName = outboxFolderName;
     }
 
     public synchronized String getAutoExpandFolderName() {
@@ -1317,6 +1328,15 @@ public class Account implements BaseAccount {
     public void setCryptoAutoSignature(boolean cryptoAutoSignature) {
         mCryptoAutoSignature = cryptoAutoSignature;
     }
+
+    public String getInboxFolderName() {
+        return mInboxFolderName;
+    }
+
+    public void setInboxFolderName(String mInboxFolderName) {
+        this.mInboxFolderName = mInboxFolderName;
+    }
+
     public synchronized boolean syncRemoteDeletions() {
         return mSyncRemoteDeletions;
     }
