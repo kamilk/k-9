@@ -18,6 +18,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.format.Time;
@@ -143,7 +144,6 @@ public class K9 extends Application {
     public static boolean ENABLE_ERROR_FOLDER = true;
     public static String ERROR_FOLDER_NAME = "K9mail-errors";
 
-
     private static boolean mAnimations = true;
 
     private static boolean mConfirmDelete = false;
@@ -177,7 +177,7 @@ public class K9 extends Application {
     private static String mQuietTimeStarts = null;
     private static String mQuietTimeEnds = null;
     private static boolean compactLayouts = false;
-
+    private static String mAttachmentDefaultPath = "";
 
 
     private static boolean useGalleryBugWorkaround = false;
@@ -209,17 +209,6 @@ public class K9 extends Application {
      */
     public static final String[] UNACCEPTABLE_ATTACHMENT_DOWNLOAD_TYPES = new String[] {
     };
-
-    /**
-     * The special name "INBOX" is used throughout the application to mean "Whatever folder
-     * the server refers to as the user's Inbox. Placed here to ease use.
-     */
-    public static final String INBOX = "INBOX";
-
-    /**
-     * This local folder is used to store messages to be sent.
-     */
-    public static final String OUTBOX = "OUTBOX";
 
     /**
      * For use when displaying that no folder is selected
@@ -452,7 +441,7 @@ public class K9 extends Application {
         editor.putBoolean("keyguardPrivacy", mKeyguardPrivacy);
 
         editor.putBoolean("compactLayouts", compactLayouts);
-
+        editor.putString("attachmentdefaultpath", mAttachmentDefaultPath);
         fontSizes.save(editor);
     }
 
@@ -507,7 +496,7 @@ public class K9 extends Application {
         mKeyguardPrivacy = sprefs.getBoolean("keyguardPrivacy", false);
 
         compactLayouts = sprefs.getBoolean("compactLayouts", false);
-
+        mAttachmentDefaultPath = sprefs.getString("attachmentdefaultpath",  Environment.getExternalStorageDirectory().toString());
         fontSizes.load(sprefs);
 
         try {
@@ -993,6 +982,14 @@ public class K9 extends Application {
         } catch (NameNotFoundException e) {
             return false;
         }
+    }
+
+    public static String getAttachmentDefaultPath() {
+        return mAttachmentDefaultPath;
+    }
+
+    public static void setAttachmentDefaultPath(String attachmentDefaultPath) {
+        K9.mAttachmentDefaultPath = attachmentDefaultPath;
     }
 
 }

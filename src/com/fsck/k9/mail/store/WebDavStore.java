@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.fsck.k9.Account;
 import com.fsck.k9.K9;
-import com.fsck.k9.R;
 import com.fsck.k9.controller.MessageRetrievalListener;
 import com.fsck.k9.helper.Utility;
 import com.fsck.k9.mail.*;
@@ -273,9 +272,12 @@ public class WebDavStore extends Store {
         if (folderName != null)
             mAccount.setSpamFolderName(folderName);
 
+        // K-9 Mail's outbox is a special local folder and different from Exchange/WebDAV's outbox.
+        /*
         folderName = getFolderName(specialFoldersMap.get(DAV_MAIL_OUTBOX_FOLDER));
         if (folderName != null)
             mAccount.setOutboxFolderName(folderName);
+        */
 
         folderName = getFolderName(specialFoldersMap.get(DAV_MAIL_SENT_FOLDER));
         if (folderName != null)
