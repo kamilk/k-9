@@ -36,10 +36,13 @@ public class SubjectCriterion extends FilteringCriterion {
         return false;
     }
 
+    public String getDatabaseTableName() {
+    	return "filter_criteria_subject";
+    }
+
 	@Override
 	public ContentValues getDatabaseValues() {
 		ContentValues result = new ContentValues();
-		result.put("field", MessageFilterManager.FIELD_SUBJECT);
 		switch(mOperand) {
 		case CONTAINS:
 			result.put("operand", MessageFilterManager.OPERAND_STRING_CONTAINS);
@@ -48,7 +51,7 @@ public class SubjectCriterion extends FilteringCriterion {
 			result.put("operand", MessageFilterManager.OPERAND_STRING_IS);
 			break;
 		}
-		result.put("reference_string", mReferenceValue);
+		result.put("value", mReferenceValue);
 		return result;
 	}
 }

@@ -30,9 +30,7 @@ public abstract class FilteringCriterion {
      * Get the name of the database table where the criterion should be stored.
      * @return
      */
-    public String getDatabaseTableName() {
-    	return "filter_criteria_string";
-    }
+    abstract public String getDatabaseTableName();
 
     /**
      * Get the map binding column names with values which should be stored in the columns.

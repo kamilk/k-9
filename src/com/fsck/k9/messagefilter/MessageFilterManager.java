@@ -41,8 +41,12 @@ public class MessageFilterManager {
 
             if (db.getVersion() < 43) {
                 db.execSQL("CREATE TABLE filters (id INTEGER PRIMARY KEY, name TEXT)");
-                db.execSQL("CREATE TABLE filter_criteria_string (id INTEGER PRIMARY KEY, filter_id INTEGER, field INTEGER, operand INTEGER, reference_string TEXT)");
-                db.execSQL("CREATE TRIGGER delete_fiter BEFORE DELETE ON filters BEGIN DELETE FROM filter_criteria_string WHERE old.id=filter_criteria_string.id; END");
+                db.execSQL("CREATE TABLE filter_criteria_subject (id INTEGER PRIMARY KEY, filter_id INTEGER, operand INTEGER NOT NULL, value TEXT NOT NULL)");
+                db.execSQL("CREATE INDEX filter_criteria_subject_filter_id ON filter_criteria_subject (filter_id)");
+                db.execSQL("CREATE TABLE filter_criteria_address (id INTEGER PRIMARY KEY, filter_id INTEGER, field INTEGER NOT NULL, value TEXT NOT NULL)");
+                db.execSQL("CREATE INDEX filter_criteria_address_filter_id ON filter_criteria_address (filter_id)");
+
+                db.execSQL("CREATE TRIGGER delete_filter BEFORE DELETE ON filters BEGIN DELETE FROM filter_criteria_subject WHERE filter_id=OLD.id; DELETE FROM filter_criteria_address WHERE filter_id=OLD.id; END;");
             }
         }
     }

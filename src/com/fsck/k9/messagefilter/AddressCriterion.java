@@ -46,6 +46,10 @@ public class AddressCriterion extends FilteringCriterion {
         return false;
     }
 
+    public String getDatabaseTableName() {
+    	return "filter_criteria_address";
+    }
+
 	@Override
 	public ContentValues getDatabaseValues() {
 		ContentValues result = new ContentValues();
@@ -57,8 +61,7 @@ public class AddressCriterion extends FilteringCriterion {
 			result.put("field", MessageFilterManager.FIELD_TO);
 			break;
 		}
-		result.put("operand", MessageFilterManager.OPERAND_STRING_CONTAINS);
-		result.put("reference_string", mReferenceValue);
+		result.put("value", mReferenceValue);
 		return result;
 	}
 
