@@ -7,7 +7,7 @@ import com.fsck.k9.mail.Message;
 /**
  * A criterion checking the subject of a message
  */
-public class SubjectCriterion extends FilteringCriterion {
+public class SubjectCriterion extends StringCriterion {
     /**
      * Enumaration type representing operations which can be used in this criteria
      */

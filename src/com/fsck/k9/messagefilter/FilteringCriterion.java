@@ -10,17 +10,12 @@ import com.fsck.k9.mail.MessagingException;
  * a given value
  */
 public abstract class FilteringCriterion {
-    protected String mReferenceValue;
     protected long mDatabaseId;
 
     /**
-     * Constructor creating a criteria performing operation: [field] [operation] [value]
-     *   (for example "subject contains 'spam'"
-     * @param operation Operation to be performed on the field
-     * @param value Reference value for the criteria
+     * Constructor
      */
-    public FilteringCriterion(String value) {
-        mReferenceValue = value;
+    public FilteringCriterion() {
         mDatabaseId = -1;
     }
 

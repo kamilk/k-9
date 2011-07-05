@@ -11,7 +11,7 @@ import com.fsck.k9.mail.MessagingException;
  * A criterion checking a field of a message containing addresses
  *   (like From and To)
  */
-public class AddressCriterion extends FilteringCriterion {
+public class AddressCriterion extends StringCriterion {
     public enum Field {
         FROM, TO
     }
