@@ -44,7 +44,7 @@ public class Account implements BaseAccount {
     /**
      * This local folder is used to store messages to be sent.
      */
-    public static final String OUTBOX = "OUTBOX";
+    public static final String OUTBOX = "K9MAIL_INTERNAL_OUTBOX";
 
     public static final String EXPUNGE_IMMEDIATELY = "EXPUNGE_IMMEDIATELY";
     public static final String EXPUNGE_MANUALLY = "EXPUNGE_MANUALLY";
@@ -63,6 +63,7 @@ public class Account implements BaseAccount {
     private static final MessageFormat DEFAULT_MESSAGE_FORMAT = MessageFormat.HTML;
     private static final QuoteStyle DEFAULT_QUOTE_STYLE = QuoteStyle.PREFIX;
     private static final String DEFAULT_QUOTE_PREFIX = ">";
+    private static final boolean DEFAULT_QUOTED_TEXT_SHOWN = true;
     private static final boolean DEFAULT_REPLY_AFTER_QUOTE = false;
 
     /**
@@ -129,6 +130,7 @@ public class Account implements BaseAccount {
     private MessageFormat mMessageFormat;
     private QuoteStyle mQuoteStyle;
     private String mQuotePrefix;
+    private boolean mDefaultQuotedTextShown;
     private boolean mReplyAfterQuote;
     private boolean mSyncRemoteDeletions;
     private String mCryptoApp;
@@ -208,6 +210,7 @@ public class Account implements BaseAccount {
         mMessageFormat = DEFAULT_MESSAGE_FORMAT;
         mQuoteStyle = DEFAULT_QUOTE_STYLE;
         mQuotePrefix = DEFAULT_QUOTE_PREFIX;
+        mDefaultQuotedTextShown = DEFAULT_QUOTED_TEXT_SHOWN;
         mReplyAfterQuote = DEFAULT_REPLY_AFTER_QUOTE;
         mSyncRemoteDeletions = true;
         mCryptoApp = Apg.NAME;
@@ -285,6 +288,7 @@ public class Account implements BaseAccount {
         mMessageFormat = MessageFormat.valueOf(prefs.getString(mUuid + ".messageFormat", DEFAULT_MESSAGE_FORMAT.name()));
         mQuoteStyle = QuoteStyle.valueOf(prefs.getString(mUuid + ".quoteStyle", DEFAULT_QUOTE_STYLE.name()));
         mQuotePrefix = prefs.getString(mUuid + ".quotePrefix", DEFAULT_QUOTE_PREFIX);
+        mDefaultQuotedTextShown = prefs.getBoolean(mUuid + ".defaultQuotedTextShown", DEFAULT_QUOTED_TEXT_SHOWN);
         mReplyAfterQuote = prefs.getBoolean(mUuid + ".replyAfterQuote", DEFAULT_REPLY_AFTER_QUOTE);
         for (String type : networkTypes) {
             Boolean useCompression = prefs.getBoolean(mUuid + ".useCompression." + type,
@@ -541,6 +545,7 @@ public class Account implements BaseAccount {
         editor.putString(mUuid + ".messageFormat", mMessageFormat.name());
         editor.putString(mUuid + ".quoteStyle", mQuoteStyle.name());
         editor.putString(mUuid + ".quotePrefix", mQuotePrefix);
+        editor.putBoolean(mUuid + ".defaultQuotedTextShown", mDefaultQuotedTextShown);
         editor.putBoolean(mUuid + ".replyAfterQuote", mReplyAfterQuote);
         editor.putString(mUuid + ".cryptoApp", mCryptoApp);
         editor.putBoolean(mUuid + ".cryptoAutoSignature", mCryptoAutoSignature);
@@ -1295,6 +1300,14 @@ public class Account implements BaseAccount {
 
     public synchronized void setQuotePrefix(String quotePrefix) {
         mQuotePrefix = quotePrefix;
+    }
+
+    public synchronized boolean isDefaultQuotedTextShown() {
+        return mDefaultQuotedTextShown;
+    }
+
+    public synchronized void setDefaultQuotedTextShown(boolean shown) {
+        mDefaultQuotedTextShown = shown;
     }
 
     public synchronized boolean isReplyAfterQuote() {

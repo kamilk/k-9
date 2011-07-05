@@ -3,9 +3,7 @@
     <string name="app_name">K-9 메일</string>
     <string name="beta_app_name">K-9 메일 베타</string>
     <string name="app_authors_fmt">Authors: <xliff:g id="app_authors">%s</xliff:g></string>
-    <string name="app_revision_url">http://code.google.com/p/k9mail/wiki/ReleaseNotes</string>
     <string name="app_revision_fmt">수정 정보: <xliff:g id="app_revision_url">%s</xliff:g></string>
-    <string name="app_webpage_url">http://code.google.com/p/k9mail/</string>
     <string name="app_libraries">K-9 메일은 아래의 서드파티 라이브러리를 이용합니다 : <xliff:g id="app_libraries_list">%s</xliff:g></string>
     <string name="app_emoji_icons">Emoji 아이콘: <xliff:g id="app_emoji_icons_link">%s</xliff:g></string>
     
@@ -393,9 +391,9 @@ K-9 메일 설치를 환영합니다.  K-9은 안드로이드용 오픈소스 �
     <string name="account_setup_incoming_auth_type_label">인증 방식</string>
     <string name="account_setup_incoming_security_none_label">없음</string>
     <string name="account_setup_incoming_security_ssl_optional_label">SSL (유효할경우)</string>
-    <string name="account_setup_incoming_security_ssl_label">SSL (항상)</string>
+    <string name="account_setup_incoming_security_ssl_label">SSL (모든 인증서 허용)</string>
     <string name="account_setup_incoming_security_tls_optional_label">TLS (유효할경우)</string>
-    <string name="account_setup_incoming_security_tls_label">TLS (항상)</string>
+    <string name="account_setup_incoming_security_tls_label">TLS (모든 인증서 허용)</string>
 
     <string name="account_setup_incoming_delete_policy_label">메시지 삭제시</string>
     <string name="account_setup_incoming_delete_policy_never_label">서버에는 메일을 삭제하지않음</string>
@@ -448,7 +446,7 @@ K-9 메일 설치를 환영합니다.  K-9은 안드로이드용 오픈소스 �
     <string name="account_setup_outgoing_security_none_label">없음</string>
     <string name="account_setup_outgoing_security_ssl_label">SSL</string>
     <string name="account_setup_outgoing_security_tls_optional_label">TLS (유효할 경우)</string>
-    <string name="account_setup_outgoing_security_tls_label">TLS (항상)</string>
+    <string name="account_setup_outgoing_security_tls_label">TLS (모든 인증서 허용)</string>
     <string name="account_setup_outgoing_require_login_label">sign-in 필요.</string>
     <string name="account_setup_outgoing_username_label">이름</string>
     <string name="account_setup_outgoing_password_label">비밀번호</string>
@@ -531,8 +529,8 @@ K-9 메일 설치를 환영합니다.  K-9은 안드로이드용 오픈소스 �
     <string name="account_settings_notify_label">새 메일 알림</string>
     <string name="account_settings_notify_sync_label">동기화 알림</string>
     <string name="account_settings_email_label">당신의 이메일 주소</string>
-    <string name="account_settings_notify_summary">메일 도착시 상태바에 표시</string>
-    <string name="account_settings_notify_sync_summary">동기화 확인중일때 상태바에 표시</string>
+    <string name="account_settings_notify_summary">메일 도착시 상태바에 알림</string>
+    <string name="account_settings_notify_sync_summary">동기화 확인중일때 상태바에 알림</string>
     <string name="account_settings_show_combined_label">Show combined Inbox</string>
     <string name="account_settings_notify_self_label">보낸편지함 포함</string>
     <string name="account_settings_notify_self_summary">내가 보낸 메시지에대해 알림 보기</string>
@@ -684,7 +682,7 @@ K-9 메일 설치를 환영합니다.  K-9은 안드로이드용 오픈소스 �
     <string name="account_settings_add_account_label">Add another account</string>
     <string name="account_settings_description_label">계정 이름</string>
     <string name="account_settings_name_label">당신의 이름</string>
-    <string name="notifications_title">통지</string>
+    <string name="notifications_title">알림</string>
     <string name="account_settings_ring_summary">메일 도착시 벨울림</string>
     <string name="account_settings_vibrate_enable">진동</string>
     <string name="account_settings_vibrate_summary">메일 도착시 진동</string>
@@ -1023,7 +1021,21 @@ K-9 메일 설치를 환영합니다.  K-9은 안드로이드용 오픈소스 �
     <string name="dialog_confirm_delete_cancel_button">삭제하지 않음</string>
 
     <string name="dialog_confirm_spam_title">스팸폴더로 이동 확인</string>
-    <string name="dialog_confirm_spam_message">정말 이 메시지를 스팸폴더로 옮기시겠습니까?</string>
+    <plurals name="dialog_confirm_spam_message">
+        <item quantity="one">정말 이 메시지를 스팸폴더로 옮기시겠습니까?</item>
+        <item quantity="other">정말 이 메시지를 스팸폴더로 옮기시겠습니까?</item>
+<!--
+  Translators:
+
+  Please review how to handle pluralization for your language at (1) and ajust
+  the <item> elements accordingly
+
+  Possible values for 'quantity': zero, one, two, few, many, other
+
+  (1) http://developer.android.com/guide/topics/resources/string-resource.html#Plurals
+
+-->
+    </plurals>
     <string name="dialog_confirm_spam_confirm_button">예</string>
     <string name="dialog_confirm_spam_cancel_button">아니오</string>
 

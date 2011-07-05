@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 
 import com.fsck.k9.helper.HtmlConverter;
 import org.apache.commons.io.IOUtils;
-import org.apache.james.mime4j.codec.EncoderUtil;
 
 import android.app.Application;
 import android.content.ContentValues;
@@ -36,6 +35,7 @@ import com.fsck.k9.AccountDatabaseUpgradeListener;
 import com.fsck.k9.AccountStats;
 import com.fsck.k9.K9;
 import com.fsck.k9.Preferences;
+import com.fsck.k9.R;
 import com.fsck.k9.controller.MessageRemovalListener;
 import com.fsck.k9.controller.MessageRetrievalListener;
 import com.fsck.k9.helper.Utility;
@@ -330,6 +330,40 @@ public class LocalStore extends Store implements Serializable {
                             Log.e(K9.LOG_TAG, "Could not replace Preferences in upgrade from DB_VERSION 41", e);
                         }
                     }
+                    if (db.getVersion() < 43) {
+                        try {
+                            // If folder "OUTBOX" (old, v3.800 - v3.802) exists, rename it to
+                            // "K9MAIL_INTERNAL_OUTBOX" (new)
+                            LocalFolder oldOutbox = new LocalFolder("OUTBOX");
+                            if (oldOutbox.exists()) {
+                                ContentValues cv = new ContentValues();
+                                cv.put("name", Account.OUTBOX);
+                                db.update("folders", cv, "name = ?", new String[] { "OUTBOX" });
+                                Log.i(K9.LOG_TAG, "Renamed folder OUTBOX to " + Account.OUTBOX);
+                            }
+
+                            // Check if old (pre v3.800) localized outbox folder exists
+                            String localizedOutbox = K9.app.getString(R.string.special_mailbox_name_outbox);
+                            LocalFolder obsoleteOutbox = new LocalFolder(localizedOutbox);
+                            if (obsoleteOutbox.exists()) {
+                                // Get all messages from the localized outbox ...
+                                Message[] messages = obsoleteOutbox.getMessages(null, false);
+
+                                if (messages.length > 0) {
+                                    // ... and move them to the drafts folder (we don't want to
+                                    // surprise the user by sending potentially very old messages)
+                                    LocalFolder drafts = new LocalFolder(mAccount.getDraftsFolderName());
+                                    obsoleteOutbox.moveMessages(messages, drafts);
+                                }
+
+                                // Now get rid of the localized outbox
+                                obsoleteOutbox.delete();
+                                obsoleteOutbox.delete(true);
+                            }
+                        } catch (Exception e) {
+                            Log.e(K9.LOG_TAG, "Error trying to fix the outbox folders", e);
+                        }
+                    }
                 }
             }
 
@@ -477,9 +511,6 @@ public class LocalStore extends Store implements Serializable {
                     cursor = db.rawQuery("SELECT COUNT(*) FROM messages", null);
                     cursor.moveToFirst();
                     return cursor.getInt(0);   // message count
-
-
-
                 } finally {
                     if (cursor != null) {
                         cursor.close();
@@ -488,8 +519,6 @@ public class LocalStore extends Store implements Serializable {
             }
         });
     }
-
-
 
     public void getMessageCounts(final AccountStats stats) throws MessagingException {
         final Account.FolderMode displayMode = mAccount.getFolderDisplayMode();
@@ -502,53 +531,53 @@ public class LocalStore extends Store implements Serializable {
                     // Always count messages in the INBOX but exclude special folders and possibly
                     // more (depending on the folder display mode)
                     String baseQuery = "SELECT SUM(unread_count), SUM(flagged_count) " +
-                            "FROM folders " +
-                            "WHERE (name = ?)" +  /* INBOX */
-                            " OR (" +
-                            "name NOT IN (?, ?, ?, ?, ?)" +  /* special folders */
-                            "%s)";  /* placeholder for additional constraints */
+                                       "FROM folders " +
+                                       "WHERE (name = ?)" +  /* INBOX */
+                                       " OR (" +
+                                       "name NOT IN (?, ?, ?, ?, ?)" +  /* special folders */
+                                       "%s)";  /* placeholder for additional constraints */
 
                     List<String> queryParam = new ArrayList<String>();
                     queryParam.add(mAccount.getInboxFolderName());
 
                     queryParam.add((mAccount.getTrashFolderName() != null) ?
-                            mAccount.getTrashFolderName() : "");
+                                   mAccount.getTrashFolderName() : "");
                     queryParam.add((mAccount.getDraftsFolderName() != null) ?
-                            mAccount.getDraftsFolderName() : "");
+                                   mAccount.getDraftsFolderName() : "");
                     queryParam.add((mAccount.getSpamFolderName() != null) ?
-                            mAccount.getSpamFolderName() : "");
+                                   mAccount.getSpamFolderName() : "");
                     queryParam.add((mAccount.getOutboxFolderName() != null) ?
-                            mAccount.getOutboxFolderName() : "");
+                                   mAccount.getOutboxFolderName() : "");
                     queryParam.add((mAccount.getSentFolderName() != null) ?
-                            mAccount.getSentFolderName() : "");
+                                   mAccount.getSentFolderName() : "");
 
                     final String extraWhere;
                     switch (displayMode) {
-                        case FIRST_CLASS:
-                            // Count messages in the INBOX and non-special first class folders
-                            extraWhere = " AND (display_class = ?)";
-                            queryParam.add(Folder.FolderClass.FIRST_CLASS.name());
-                            break;
-                        case FIRST_AND_SECOND_CLASS:
-                            // Count messages in the INBOX and non-special first and second class folders
-                            extraWhere = " AND (display_class IN (?, ?))";
-                            queryParam.add(Folder.FolderClass.FIRST_CLASS.name());
-                            queryParam.add(Folder.FolderClass.SECOND_CLASS.name());
-                            break;
-                        case NOT_SECOND_CLASS:
-                            // Count messages in the INBOX and non-special non-second-class folders
-                            extraWhere = " AND (display_class != ?)";
-                            queryParam.add(Folder.FolderClass.SECOND_CLASS.name());
-                            break;
-                        case ALL:
-                            // Count messages in the INBOX and non-special folders
-                            extraWhere = "";
-                            break;
-                        default:
-                            Log.e(K9.LOG_TAG, "asked to compute account statistics for an impossible folder mode " + displayMode);
-                            stats.unreadMessageCount = 0;
-                            stats.flaggedMessageCount = 0;
-                            return null;
+                    case FIRST_CLASS:
+                        // Count messages in the INBOX and non-special first class folders
+                        extraWhere = " AND (display_class = ?)";
+                        queryParam.add(Folder.FolderClass.FIRST_CLASS.name());
+                        break;
+                    case FIRST_AND_SECOND_CLASS:
+                        // Count messages in the INBOX and non-special first and second class folders
+                        extraWhere = " AND (display_class IN (?, ?))";
+                        queryParam.add(Folder.FolderClass.FIRST_CLASS.name());
+                        queryParam.add(Folder.FolderClass.SECOND_CLASS.name());
+                        break;
+                    case NOT_SECOND_CLASS:
+                        // Count messages in the INBOX and non-special non-second-class folders
+                        extraWhere = " AND (display_class != ?)";
+                        queryParam.add(Folder.FolderClass.SECOND_CLASS.name());
+                        break;
+                    case ALL:
+                        // Count messages in the INBOX and non-special folders
+                        extraWhere = "";
+                        break;
+                    default:
+                        Log.e(K9.LOG_TAG, "asked to compute account statistics for an impossible folder mode " + displayMode);
+                        stats.unreadMessageCount = 0;
+                        stats.flaggedMessageCount = 0;
+                        return null;
                     }
 
                     String query = String.format(Locale.US, baseQuery, extraWhere);
@@ -1261,7 +1290,7 @@ public class LocalStore extends Store implements Serializable {
                         }
                         Cursor cursor = null;
                         try {
-                            cursor = db.rawQuery("SELECT COUNT(*) FROM messages WHERE folder_id = ?",
+                            cursor = db.rawQuery("SELECT COUNT(*) FROM messages WHERE deleted = 0 and folder_id = ?",
                                                  new String[] {
                                                      Long.toString(mFolderId)
                                                  });
@@ -1664,20 +1693,19 @@ public class LocalStore extends Store implements Serializable {
                                                 body = new LocalAttachmentBody(Uri.parse(contentUri), mApplication);
                                             }
 
-                                            String encoded_name = EncoderUtil.encodeIfNecessary(name,
-                                                                  EncoderUtil.Usage.WORD_ENTITY, 7);
-
                                             MimeBodyPart bp = new LocalAttachmentBodyPart(body, id);
-                                            bp.setHeader(MimeHeader.HEADER_CONTENT_TYPE,
-                                                         String.format("%s;\n name=\"%s\"",
-                                                                       type,
-                                                                       encoded_name));
                                             bp.setHeader(MimeHeader.HEADER_CONTENT_TRANSFER_ENCODING, "base64");
-                                            bp.setHeader(MimeHeader.HEADER_CONTENT_DISPOSITION,
-                                                         String.format("%s;\n filename=\"%s\";\n size=%d",
-                                                                       contentDisposition,
-                                                                       encoded_name, // TODO: Should use encoded word defined in RFC 2231.
-                                                                       size));
+                                            if (name != null) {
+                                                bp.setHeader(MimeHeader.HEADER_CONTENT_TYPE,
+                                                             String.format("%s;\n name=\"%s\"",
+                                                                           type,
+                                                                           name));
+                                                bp.setHeader(MimeHeader.HEADER_CONTENT_DISPOSITION,
+                                                             String.format("%s;\n filename=\"%s\";\n size=%d",
+                                                                           contentDisposition,
+                                                                           name, // TODO: Should use encoded word defined in RFC 2231.
+                                                                           size));
+                                            }
 
                                             bp.setHeader(MimeHeader.HEADER_CONTENT_ID, contentId);
                                             /*
@@ -2378,7 +2406,7 @@ public class LocalStore extends Store implements Serializable {
                                 Utility.combine(attachment.getHeader(
                                                     MimeHeader.HEADER_ANDROID_ATTACHMENT_STORE_DATA), ',');
 
-                            String name = MimeUtility.unfoldAndDecode(MimeUtility.getHeaderParameter(attachment.getContentType(), "name"));
+                            String name = MimeUtility.getHeaderParameter(attachment.getContentType(), "name");
                             String contentId = MimeUtility.getHeaderParameter(attachment.getContentId(), null);
 
                             String contentDisposition = MimeUtility.unfoldAndDecode(attachment.getDisposition());
@@ -2393,7 +2421,7 @@ public class LocalStore extends Store implements Serializable {
                             }
 
                             if (name == null && contentDisposition != null) {
-                                name = MimeUtility.unfoldAndDecode(MimeUtility.getHeaderParameter(contentDisposition, "filename"));
+                                name = MimeUtility.getHeaderParameter(contentDisposition, "filename");
                             }
                             if (attachmentId == -1) {
                                 ContentValues cv = new ContentValues();
@@ -2439,8 +2467,8 @@ public class LocalStore extends Store implements Serializable {
 
                                         if (htmlContent != null) {
                                             String newHtmlContent = htmlContent.replaceAll(
-                                                    Pattern.quote("cid:" + contentId),
-                                                    contentUri.toString());
+                                                                        Pattern.quote("cid:" + contentId),
+                                                                        contentUri.toString());
 
                                             ContentValues cv = new ContentValues();
                                             cv.put("html_content", newHtmlContent);
@@ -2562,6 +2590,7 @@ public class LocalStore extends Store implements Serializable {
             setPushState(null);
             setLastPush(0);
             setLastChecked(0);
+            setVisibleLimit(mAccount.getDisplayCount());
         }
 
         private void resetUnreadAndFlaggedCounts() {

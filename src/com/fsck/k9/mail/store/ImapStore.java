@@ -383,7 +383,7 @@ public class ImapStore extends Store {
                     decodedFolderName = decodeFolderName(response.getString(3));
                 } catch (CharacterCodingException e) {
                     Log.w(K9.LOG_TAG, "Folder name not correctly encoded with the UTF-7 variant " +
-                            "as defined by RFC 3501: " + response.getString(3), e);
+                          "as defined by RFC 3501: " + response.getString(3), e);
 
                     //TODO: Use the raw name returned by the server for all commands that require
                     //      a folder name. Use the decoded name only for showing it to the user.
@@ -1111,7 +1111,12 @@ public class ImapStore extends Store {
                 fetchFields.add("BODYSTRUCTURE");
             }
             if (fp.contains(FetchProfile.Item.BODY_SANE)) {
-                fetchFields.add(String.format("BODY.PEEK[]<0.%d>", mAccount.getMaximumAutoDownloadMessageSize()));
+                // If the user wants to download unlimited-size messages, don't go only for the truncated body
+                if (mAccount.getMaximumAutoDownloadMessageSize() > 0) {
+                    fetchFields.add(String.format("BODY.PEEK[]<0.%d>", mAccount.getMaximumAutoDownloadMessageSize()));
+                } else {
+                    fetchFields.add("BODY.PEEK[]");
+                }
             }
             if (fp.contains(FetchProfile.Item.BODY)) {
                 fetchFields.add("BODY.PEEK[]");

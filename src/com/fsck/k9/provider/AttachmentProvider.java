@@ -74,12 +74,12 @@ public class AttachmentProvider extends ContentProvider {
          */
         final File cacheDir = getContext().getCacheDir();
         if (cacheDir == null) {
-        	return true;
+            return true;
         }
-		File[] files = cacheDir.listFiles();
-		if (files == null) {
-			return true;
-		}
+        File[] files = cacheDir.listFiles();
+        if (files == null) {
+            return true;
+        }
         for (File file : files) {
             if (file.getName().endsWith(".tmp")) {
                 file.delete();
@@ -235,7 +235,7 @@ public class AttachmentProvider extends ContentProvider {
             final Account account = Preferences.getPreferences(getContext()).getAccount(dbName);
             attachmentInfo = LocalStore.getLocalInstance(account, K9.app).getAttachmentInfo(id);
         } catch (MessagingException e) {
-            Log.e(K9.LOG_TAG, "Uname to retrieve attachment info from local store for ID: " + id, e);
+            Log.e(K9.LOG_TAG, "Unable to retrieve attachment info from local store for ID: " + id, e);
             return null;
         }
 

@@ -50,6 +50,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Stack;
 import java.util.zip.GZIPInputStream;
 
@@ -1410,7 +1411,11 @@ public class WebDavStore extends Store {
             }
 
             if (fp.contains(FetchProfile.Item.BODY_SANE)) {
-                fetchMessages(messages, listener, (mAccount.getMaximumAutoDownloadMessageSize() / 76));
+                if (mAccount.getMaximumAutoDownloadMessageSize() > 0) {
+                    fetchMessages(messages, listener, (mAccount.getMaximumAutoDownloadMessageSize() / 76));
+                } else {
+                    fetchMessages(messages, listener, -1);
+                }
             }
             if (fp.contains(FetchProfile.Item.BODY)) {
                 fetchMessages(messages, listener, -1);
@@ -2195,8 +2200,8 @@ public class WebDavStore extends Store {
                             String date = data.get(header);
                             date = date.substring(0, date.length() - 1);
 
-                            DateFormat dfInput = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-                            DateFormat dfOutput = new SimpleDateFormat("EEE, d MMM yy HH:mm:ss Z");
+                            DateFormat dfInput = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US);
+                            DateFormat dfOutput = new SimpleDateFormat("EEE, d MMM yy HH:mm:ss Z", Locale.US);
                             String tempDate = "";
 
                             try {

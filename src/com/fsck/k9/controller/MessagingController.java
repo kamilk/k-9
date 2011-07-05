@@ -794,7 +794,7 @@ public class MessagingController implements Runnable {
             LocalStore localStore = account.getLocalStore();
             LocalFolder localFolder = localStore.getFolder(folder);
             if (localFolder.getVisibleLimit() > 0) {
-                localFolder.setVisibleLimit(localFolder.getVisibleLimit() + account.getDisplayCount());
+                localFolder.setVisibleLimit(localFolder.getVisibleLimit() + localFolder.getMessageCount());
             }
             synchronizeMailbox(account, folder, listener, null);
         } catch (MessagingException me) {
@@ -1450,7 +1450,14 @@ public class MessagingController implements Runnable {
                         return;
                     }
 
-                    // include the message in the view
+                    if (account.getMaximumAutoDownloadMessageSize() > 0 &&
+                    message.getSize() > account.getMaximumAutoDownloadMessageSize()) {
+                        largeMessages.add(message);
+                    } else {
+                        smallMessages.add(message);
+                    }
+
+                    // And include it in the view
                     if (message.getSubject() != null && message.getFrom() != null) {
                         /*
                          * We check to make sure that we got something worth
@@ -1692,8 +1699,11 @@ public class MessagingController implements Runnable {
                      * the account's autodownload size limit, otherwise mark as only a partial
                      * download.  This will prevent the system from downloading the same message
                      * twice.
+                     *
+                     * If there is no limit on autodownload size, that's the same as the message
+                     * being smaller than the max size
                      */
-                    if (message.getSize() < account.getMaximumAutoDownloadMessageSize()) {
+                    if (account.getMaximumAutoDownloadMessageSize() == 0 || message.getSize() < account.getMaximumAutoDownloadMessageSize()) {
                         localMessage.setFlag(Flag.X_DOWNLOADED_FULL, true);
                     } else {
                         // Set a flag indicating that the message has been partially downloaded and
@@ -3961,7 +3971,7 @@ public class MessagingController implements Runnable {
                 if (messageUid <= localFolder.getLastUid()) {
                     if (K9.DEBUG)
                         Log.d(K9.LOG_TAG, "Message uid is " + messageUid + ", max message uid is " +
-                                localFolder.getLastUid() + ".  Skipping notification.");
+                              localFolder.getLastUid() + ".  Skipping notification.");
                     return false;
                 }
             } catch (NumberFormatException e) {
@@ -3984,7 +3994,7 @@ public class MessagingController implements Runnable {
      * Creates a notification of a newly received message.
      */
     private void notifyAccount(Context context, Account account, Message message,
-            int previousUnreadMessageCount, AtomicInteger newMessageCount) {
+                               int previousUnreadMessageCount, AtomicInteger newMessageCount) {
 
         // If we have a message, set the notification to "<From>: <Subject>"
         StringBuilder messageNotice = new StringBuilder();
