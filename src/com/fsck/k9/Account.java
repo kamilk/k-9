@@ -18,6 +18,7 @@ import com.fsck.k9.mail.store.StorageManager;
 import com.fsck.k9.mail.store.StorageManager.StorageProvider;
 import com.fsck.k9.messagefilter.MessageFilter;
 import com.fsck.k9.messagefilter.MessageFilterManager;
+import com.fsck.k9.messagefilter.SimpleCriteria;
 import com.fsck.k9.messagefilter.SubjectCriterion;
 import com.fsck.k9.view.ColorChip;
 
@@ -384,6 +385,9 @@ public class Account implements BaseAccount {
         mMessageFilterManager = new MessageFilterManager(this);
         MessageFilter filter = new MessageFilter("debug", false);
         filter.addCriterion(new SubjectCriterion(SubjectCriterion.Operand.CONTAINS, "spam"));
+        SimpleCriteria simple_criteria = new SimpleCriteria();
+        simple_criteria.turnSpamFlagOnOff(true);
+        filter.addCriterion(simple_criteria);
         mMessageFilterManager.addFilter(filter);
     }
 

@@ -6,8 +6,7 @@ import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.MessagingException;
 
 /**
- * Filtering criteria based on comparision of a specified string field with
- * a given value
+ * Base class for all filtering criteria
  */
 public abstract class FilteringCriterion {
     protected long mDatabaseId;
@@ -19,6 +18,12 @@ public abstract class FilteringCriterion {
         mDatabaseId = -1;
     }
 
+    /**
+     * Check if the message matches the criterion.
+     * @param message Message to be checked
+     * @return True if the message matches the criterion, false if it doesn't
+     * @throws MessagingException
+     */
     public abstract boolean check(final Message message) throws MessagingException;
 
     /**

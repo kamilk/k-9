@@ -40,13 +40,24 @@ public class MessageFilterManager {
                                             db.getVersion(), accountDb.getVersion()));
 
             if (db.getVersion() < 44) {
-                db.execSQL("CREATE TABLE filters (id INTEGER PRIMARY KEY, name TEXT)");
-                db.execSQL("CREATE TABLE filter_criteria_subject (id INTEGER PRIMARY KEY, filter_id INTEGER, operand INTEGER NOT NULL, value TEXT NOT NULL)");
-                db.execSQL("CREATE INDEX filter_criteria_subject_filter_id ON filter_criteria_subject (filter_id)");
-                db.execSQL("CREATE TABLE filter_criteria_address (id INTEGER PRIMARY KEY, filter_id INTEGER, field INTEGER NOT NULL, value TEXT NOT NULL)");
-                db.execSQL("CREATE INDEX filter_criteria_address_filter_id ON filter_criteria_address (filter_id)");
+            	//for debugging purposes
+//            	db.execSQL("DROP TABLE IF EXISTS filter_criteria_subject");
+//            	db.execSQL("DROP TABLE IF EXISTS filter_criteria_address");
+//            	db.execSQL("DROP TABLE IF EXISTS filter_criteria_simple");
+//            	db.execSQL("DROP TABLE IF EXISTS filters");
 
-                db.execSQL("CREATE TRIGGER delete_filter BEFORE DELETE ON filters BEGIN DELETE FROM filter_criteria_subject WHERE filter_id=OLD.id; DELETE FROM filter_criteria_address WHERE filter_id=OLD.id; END;");
+                db.execSQL("CREATE TABLE filters (id INTEGER PRIMARY KEY, name TEXT)");
+                db.execSQL("CREATE TABLE filter_criteria_subject (id INTEGER PRIMARY KEY, filter_id INTEGER NULL, operand INTEGER NOT NULL, value TEXT NOT NULL)");
+                db.execSQL("CREATE INDEX filter_criteria_subject_filter_id ON filter_criteria_subject (filter_id)");
+                db.execSQL("CREATE TABLE filter_criteria_address (id INTEGER PRIMARY KEY, filter_id INTEGER NOT NULL, field INTEGER NOT NULL, value TEXT NOT NULL)");
+                db.execSQL("CREATE INDEX filter_criteria_address_filter_id ON filter_criteria_address (filter_id)");
+                db.execSQL("CREATE TABLE filter_criteria_simple (id INTEGER PRIMARY KEY, filter_id INTEGER NOT NULL, spam_flag BOOLEAN NOT NULL)");
+                db.execSQL("CREATE INDEX filter_criteria_simple_filter_id ON filter_criteria_simple (filter_id)");
+
+                db.execSQL("CREATE TRIGGER delete_filter BEFORE DELETE ON filters BEGIN " +
+                		"DELETE FROM filter_criteria_subject WHERE filter_id=OLD.id; " +
+                		"DELETE FROM filter_criteria_address WHERE filter_id=OLD.id; " +
+                		"DELETE FROM filter_criteria_simple WHERE filter_id=OLD.id; END;");
             }
         }
     }
@@ -124,6 +135,7 @@ public class MessageFilterManager {
      * @return How many messages in the current have been automatically marked as seen.
      */
     public int performActions(final MessagingController controller, final LocalFolder currentFolder) {
+    	//TODO take into consideration there may be more filters than one
         return mFilters.get(0).performActions(controller, currentFolder); //TODO
     }
 }
