@@ -224,4 +224,7 @@ public abstract class Message implements Part, Body {
         return 0;
     }
 
+    public abstract String getSpamFlag();
+
+    public abstract void setSpamFlag(String spamFlag) throws MessagingException;
 }

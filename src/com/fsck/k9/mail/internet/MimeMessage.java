@@ -420,6 +420,19 @@ public class MimeMessage extends Message {
         }
     }
 
+    /**
+     * Returns the unfolded, decoded value of the X-Spam-Flag.
+     */
+    @Override
+    public String getSpamFlag() {
+        return MimeUtility.unfoldAndDecode(getFirstHeader("X-Spam-Flag"), this);
+    }
+
+    @Override
+    public void setSpamFlag(String spamFlag) throws MessagingException {
+        setHeader("X-Spam-Flag", spamFlag);
+    }
+
     class MimeMessageBuilder implements ContentHandler {
         private Stack<Object> stack = new Stack<Object>();
 
