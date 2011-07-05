@@ -12,7 +12,7 @@ import android.util.Log;
  * Handles the database for a particular account
  */
 public class AccountDatabase {
-    protected static final int DB_VERSION = 43;
+    protected static final int DB_VERSION = 44;
     private final Application mApplication;
     protected String uUid = null;
     private LockableDatabase database;

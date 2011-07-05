@@ -39,7 +39,7 @@ public class MessageFilterManager {
             Log.i(K9.LOG_TAG, String.format("Upgrading message filter database from version %d to version %d",
                                             db.getVersion(), accountDb.getVersion()));
 
-            if (db.getVersion() < 43) {
+            if (db.getVersion() < 44) {
                 db.execSQL("CREATE TABLE filters (id INTEGER PRIMARY KEY, name TEXT)");
                 db.execSQL("CREATE TABLE filter_criteria_subject (id INTEGER PRIMARY KEY, filter_id INTEGER, operand INTEGER NOT NULL, value TEXT NOT NULL)");
                 db.execSQL("CREATE INDEX filter_criteria_subject_filter_id ON filter_criteria_subject (filter_id)");

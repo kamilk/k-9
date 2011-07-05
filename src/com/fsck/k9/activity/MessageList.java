@@ -1886,7 +1886,7 @@ public class MessageList
             @Override
             public void messageDeleted(Account account, String folder, Message message) {
                 MessageInfoHolder holder = mAdapter.getMessage(message);
-                mAdapter.removeMessage(holder);
+                mAdapter.removeMessages(Collections.singletonList(holder));
             }
         };
 
